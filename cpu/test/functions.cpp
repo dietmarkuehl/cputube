@@ -37,29 +37,70 @@
 
 namespace test
 {
-    template <typename InIt, typename Predicate>
-    std::size_t count(InIt it, InIt end, Predicate predicate)
+    template <typename InIt>
+    std::size_t run(InIt it, InIt end)
     {
         std::size_t rc(0);
         for (; it != end; ++it) {
-            if (predicate(*it)) {
-                ++rc;
-            }
+            rc += std::isalnum(*it);
         }
         return rc;
     }
 
-    template <typename InIt, typename Predicate>
-    void measure(char const* name, InIt begin, InIt end, Predicate predicate)
+    template <typename Container>
+    void baseline(Container const& cont)
     {
-        cpu::tube::timer timer;
-        std::size_t result(0);
-        for (int i(0); i != 100; ++i) {
-            result += test::count(begin, end, predicate);
+        std::cout << std::setw(20) << "baseline" << ": ";
+        test::run(cont.begin(), cont.end());
+        {
+            // compete
+            cpu::tube::timer timer;
+            std::size_t result(0);
+            for (int i(0); i != 100; ++i) {
+                result += test::run(cont.begin(), cont.end());
+            }
+            std::cout << "time=" << std::setw(4) << timer << ' '
+                      << "result=" << result << '\n';
         }
-        std::cout << std::setw(20) << name << ": "
-                  << "time=" << std::setw(4) << timer << " "
-                  << "result=" << result << '\n';
+    }
+
+    template <typename InIt, typename Function>
+    std::size_t run(InIt it, InIt end, Function function)
+    {
+        std::size_t rc(0);
+        for (; it != end; ++it) {
+            rc += function(*it);
+        }
+        return rc;
+    }
+
+    template <typename Container, typename Function>
+    void measure(char const* name, Container const& cont, Function function)
+    {
+        std::cout << std::setw(20) << name << ": ";
+        // qualify
+        typedef unsigned char uc_t;
+        for (unsigned short s(0); s != std::numeric_limits<uc_t>::max(); ++s) {
+            if (std::isalnum(uc_t(s)) != function(uc_t(s))) {
+                std::cout << "qualification failed: "
+                          << "c=" << s << ' '
+                          << "expect=" << std::isalnum(uc_t(s)) << ' '
+                          << "got=" << function(uc_t(s)) << '\n';
+                return;
+            }
+        }
+        // warm up
+        test::run(cont.begin(), cont.end(), function);
+        {
+            // compete
+            cpu::tube::timer timer;
+            std::size_t result(0);
+            for (int i(0); i != 100; ++i) {
+                result += test::run(cont.begin(), cont.end(), function);
+            }
+            std::cout << "time=" << std::setw(4) << timer << ' '
+                      << "result=" << result << '\n';
+        }
     }
 }
 
@@ -67,22 +108,22 @@ namespace test
 
 namespace test
 {
-    inline bool isprint(unsigned char c)
+    inline int isalnum(unsigned char c)
     {
-        return std::isprint(c);
+        return std::isalnum(c);
     }
 
-    struct isprint_t
+    struct isalnum_t
     {
-        bool operator()(unsigned char c) const {
-            return std::isprint(c);
+        int operator()(unsigned char c) const {
+            return std::isalnum(c);
         }
     };
 
-    struct inline_isprint_t
+    struct inline_isalnum_t
     {
-        inline bool operator()(unsigned char c) const {
-            return std::isprint(c);
+        inline int operator()(unsigned char c) const {
+            return std::isalnum(c);
         }
     };
 }
@@ -95,17 +136,19 @@ int main()
     std::vector<unsigned char> text{ std::istreambuf_iterator<char>(in),
                                      std::istreambuf_iterator<char>() };
 
-    test::measure("heat", text.begin(), text.end(), &test::isprint);
-    test::measure("naive", text.begin(), text.end(), &test::isprint);
-    test::measure("naive2", text.begin(), text.end(), test::isprint);
-    test::measure("lambda", text.begin(), text.end(),
-                  [](unsigned char c) { return std::isprint(c); });
-    test::measure("functor", text.begin(), text.end(), test::isprint_t());
-    test::measure("inline functor", text.begin(), text.end(), test::inline_isprint_t());
-    test::measure("function(naive)", text.begin(), text.end(),
-                  std::function<bool(unsigned char)>(&test::isprint));
-    test::measure("function(naive2)", text.begin(), text.end(),
-                  std::function<bool(unsigned char)>(test::isprint));
-    test::measure("function(functor)", text.begin(), text.end(),
-                  std::function<bool(unsigned char)>(test::isprint_t()));
+    test::baseline(text);
+    test::baseline(text);
+    test::baseline(text);
+    test::measure("naive", text, &test::isalnum);
+    test::measure("naive2", text, test::isalnum);
+    test::measure("lambda", text,
+                  [](unsigned char c) { return std::isalnum(c); });
+    test::measure("functor", text, test::isalnum_t());
+    test::measure("inline functor", text, test::inline_isalnum_t());
+    test::measure("function(naive)", text,
+                  std::function<int(unsigned char)>(&test::isalnum));
+    test::measure("function(naive2)", text,
+                  std::function<int(unsigned char)>(test::isalnum));
+    test::measure("function(functor)", text,
+                  std::function<int(unsigned char)>(test::isalnum_t()));
 }
