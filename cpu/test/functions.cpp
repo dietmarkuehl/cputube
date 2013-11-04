@@ -24,6 +24,7 @@
 // ----------------------------------------------------------------------------
 
 #include "cpu/tube/timer.hpp"
+#include "cpu/tube/processor.hpp"
 #include <cctype>
 #include <cstddef>
 #include <fstream>
@@ -50,7 +51,7 @@ namespace test
     template <typename Container>
     void baseline(Container const& cont)
     {
-        std::cout << std::setw(20) << "baseline" << ": ";
+        std::cout << std::setw(40) << "baseline" << ": ";
         test::run(cont.begin(), cont.end());
         {
             // compete
@@ -59,7 +60,8 @@ namespace test
             for (int i(0); i != 100; ++i) {
                 result += test::run(cont.begin(), cont.end());
             }
-            std::cout << "time=" << std::setw(4) << timer << ' '
+            cpu::tube::duration duration(timer);
+            std::cout << "time=" << std::setw(4) << duration << ' '
                       << "result=" << result << '\n';
         }
     }
@@ -77,7 +79,7 @@ namespace test
     template <typename Container, typename Function>
     void measure(char const* name, Container const& cont, Function function)
     {
-        std::cout << std::setw(20) << name << ": ";
+        std::cout << std::setw(40) << name << ": ";
         // qualify
         typedef unsigned char uc_t;
         for (unsigned short s(0); s != std::numeric_limits<uc_t>::max(); ++s) {
@@ -98,7 +100,8 @@ namespace test
             for (int i(0); i != 100; ++i) {
                 result += test::run(cont.begin(), cont.end(), function);
             }
-            std::cout << "time=" << std::setw(4) << timer << ' '
+            cpu::tube::duration duration(timer);
+            std::cout << "time=" << std::setw(4) << duration << ' '
                       << "result=" << result << '\n';
         }
     }
@@ -126,25 +129,62 @@ namespace test
             return std::isalnum(c);
         }
     };
+
+    struct virtual_isalnum_t
+    {
+        virtual int operator()(unsigned char c) const {
+            return std::isalnum(c);
+        }
+    };
+
+    struct member
+    {
+        int isalnum(unsigned char c) const {
+            return std::isalnum(c);
+        }
+    };
+
+    struct inline_member
+    {
+        inline int isalnum(unsigned char c) const {
+            return std::isalnum(c);
+        }
+    };
+
+    struct virtual_member
+    {
+        virtual int isalnum(unsigned char c) const {
+            return std::isalnum(c);
+        }
+    };
 }
 
 // ----------------------------------------------------------------------------
 
 int main()
 {
+    std::cout << "processor=" << cpu::tube::processor() << '\n';
     std::ifstream in("cpu/test/functions.cpp");
     std::vector<unsigned char> text{ std::istreambuf_iterator<char>(in),
                                      std::istreambuf_iterator<char>() };
 
     test::baseline(text);
-    test::baseline(text);
-    test::baseline(text);
-    test::measure("naive", text, &test::isalnum);
-    test::measure("naive2", text, test::isalnum);
+    test::measure("function", text, test::isalnum);
+    test::measure("function pointer", text, &test::isalnum);
+    test::measure("member pointer", text, std::bind(&test::member::isalnum, test::member(), std::placeholders::_1));
+    test::measure("inline member pointer", text, std::bind(&test::inline_member::isalnum, test::inline_member(), std::placeholders::_1));
+    test::measure("virtual member pointer", text, std::bind(&test::virtual_member::isalnum, test::virtual_member(), std::placeholders::_1));
     test::measure("lambda", text,
                   [](unsigned char c) { return std::isalnum(c); });
-    test::measure("functor", text, test::isalnum_t());
-    test::measure("inline functor", text, test::inline_isalnum_t());
+    test::measure("function object", text, test::isalnum_t());
+    test::measure("function object (inline)", text, test::inline_isalnum_t());
+    test::measure("function object (virtual)", text, test::virtual_isalnum_t());
+    test::isalnum_t function_object;
+    test::measure("ref(function object)", text, std::ref(function_object));
+    test::inline_isalnum_t inline_function_object;
+    test::measure("ref(function object (inline))", text, std::ref(inline_function_object));
+    test::virtual_isalnum_t virtual_function_object;
+    test::measure("ref(function object (virtual))", text, std::ref(virtual_function_object));
     test::measure("function(naive)", text,
                   std::function<int(unsigned char)>(&test::isalnum));
     test::measure("function(naive2)", text,

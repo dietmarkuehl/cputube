@@ -1,4 +1,4 @@
-// cpu/tube/timer.cpp                                                 -*-C++-*-
+// cpu/tube/processor.hpp                                             -*-C++-*-
 // ----------------------------------------------------------------------------
 //  Copyright (C) 2013 Dietmar Kuehl http://www.dietmar-kuehl.de         
 //                                                                       
@@ -23,28 +23,31 @@
 //  OTHER DEALINGS IN THE SOFTWARE. 
 // ----------------------------------------------------------------------------
 
-#include "cpu/tube/timer.hpp"
-#include <iostream>
+#ifndef INCLUDED_CPU_TUBE_PROCESSOR
+#define INCLUDED_CPU_TUBE_PROCESSOR
+
+#include <iosfwd>
 
 // ----------------------------------------------------------------------------
 
-std::ostream& cpu::tube::duration::print(std::ostream& out) const
+namespace cpu
 {
-    using namespace std::chrono;
-    return out << duration_cast<microseconds>(this->d_duration).count();
-}
-
-std::ostream& cpu::tube::operator<< (std::ostream&              out,
-                                     cpu::tube::duration const& duration)
-{
-    return duration.print(out);
+    namespace tube
+    {
+        class processor;
+        std::ostream& operator<< (std::ostream&, processor const&);
+    }
 }
 
 // ----------------------------------------------------------------------------
 
-std::ostream& cpu::tube::operator<< (std::ostream&           out,
-                                     cpu::tube::timer const& timer)
+class cpu::tube::processor
 {
-    using namespace std::chrono;
-    return out << timer.measure();
-}
+public:
+    // possibly there are some useful attributes to be exposed
+    static std::ostream& print(std::ostream&);
+};
+
+// ----------------------------------------------------------------------------
+
+#endif

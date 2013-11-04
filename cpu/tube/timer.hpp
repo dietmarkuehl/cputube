@@ -36,26 +36,56 @@ namespace cpu
     namespace tube
     {
         class timer;
+        class duration;
+        std::ostream& operator<< (std::ostream&, cpu::tube::duration const&);
         std::ostream& operator<< (std::ostream&, cpu::tube::timer const&);
     }
 }
 
 // ----------------------------------------------------------------------------
 
-class cpu::tube::timer
+class cpu::tube::duration
 {
 private:
     typedef std::chrono::high_resolution_clock clock;
-    clock::time_point d_start;
+    clock::time_point::duration d_duration;
+
 public:
-    timer(): d_start(clock::now()) {}
+    duration(cpu::tube::timer const& timer);
+    duration(clock::time_point::duration value): d_duration(value) {}
+    std::ostream& print(std::ostream& out) const;
+};
+
+// ----------------------------------------------------------------------------
+
+class cpu::tube::timer
+{
+private:
+    friend class cpu::tube::duration;
+    typedef std::chrono::high_resolution_clock clock;
+    clock::time_point d_start;
+
     timer(timer const&) = delete;
     void operator=(timer) = delete;
 
-    clock::time_point::duration measure() const {
+
+    clock::time_point::duration intern_measure() const {
         return clock::now() - this->d_start;
     }
+public:
+    timer(): d_start(clock::now()) {}
+
+    cpu::tube::duration measure() const {
+        return this->intern_measure();
+    }
 };
+
+// ----------------------------------------------------------------------------
+
+inline cpu::tube::duration::duration(cpu::tube::timer const& timer)
+    : d_duration(timer.intern_measure())
+{
+}
 
 // ----------------------------------------------------------------------------
 

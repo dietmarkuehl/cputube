@@ -23,7 +23,7 @@
 #   OTHER DEALINGS IN THE SOFTWARE. 
 #  ----------------------------------------------------------------------------
 
-NAME = tst
+NAME = functions
 
 #  ----------------------------------------------------------------------------
 COMPILER = gcc
@@ -50,6 +50,7 @@ OBJ      = $(ARCH)-$(COMPILER)
 CPPFLAGS += -I.
 CXXFILES = \
 	cpu/tube/timer.cpp \
+	cpu/tube/processor.cpp \
 
 LIBFILES = $(CXXFILES:cpu/tube/%.cpp=$(OBJ)/cputube_%.o)
 
@@ -62,7 +63,6 @@ check: $(OBJ)/cputest_$(NAME)
 
 $(OBJ)/cputest_$(NAME): $(OBJ)/libcputube.a $(OBJ)/cputest_$(NAME).o
 	$(CXX) -o $@ $(LDFLAGS) $(OBJ)/cputest_$(NAME).o -L$(OBJ) -lcputube
-	echo "done"
 
 $(OBJ)/libcputube.a: $(LIBFILES)
 	$(AR) $(ARFLAGS) $@ $(LIBFILES)
