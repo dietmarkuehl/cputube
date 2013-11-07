@@ -25,6 +25,7 @@
 
 #include "cpu/tube/timer.hpp"
 #include "cpu/tube/processor.hpp"
+#include "boost/function.hpp"
 #include <cctype>
 #include <cstddef>
 #include <fstream>
@@ -191,4 +192,8 @@ int main()
                   std::function<int(unsigned char)>(test::isalnum));
     test::measure("function(functor)", text,
                   std::function<int(unsigned char)>(test::isalnum_t()));
+    test::measure("boost::function(naive)", text,
+                  boost::function<int(unsigned char)>(&test::isalnum));
+    test::measure("boost::function(functor)", text,
+                  boost::function<int(unsigned char)>(test::isalnum_t()));
 }

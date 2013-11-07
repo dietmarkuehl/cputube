@@ -23,7 +23,7 @@
 #   OTHER DEALINGS IN THE SOFTWARE. 
 #  ----------------------------------------------------------------------------
 
-NAME = array-foreach
+NAME = sequence-iteration
 
 #  ----------------------------------------------------------------------------
 COMPILER = gcc
@@ -36,6 +36,7 @@ ifeq ($(COMPILER),gcc)
     CXX      = $(GXX)
     CPPFLAGS += -std=c++11
     CXXFLAGS += -W -Wall -O3
+    //CXXFLAGS += -fno-tree-vectorize
 endif
 ifeq ($(COMPILER),clang)
     LIBCXX   = /Users/kuehl/src/llvm/libcxx
