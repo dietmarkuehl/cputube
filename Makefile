@@ -26,8 +26,7 @@
 NAME = functions
 
 TESTS = \
-	access-int-array \
-	array-foreach \
+	accumlate-int-array \
 	functions \
 	sequence-iteration \
 

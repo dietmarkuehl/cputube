@@ -1,4 +1,4 @@
-// cpu/test/access-int-array.cpp                                      -*-C++-*-
+// cpu/test/accumulate-int-array.cpp                                  -*-C++-*-
 // ----------------------------------------------------------------------------
 //  Copyright (C) 2013 Dietmar Kuehl http://www.dietmar-kuehl.de         
 //                                                                       
@@ -30,12 +30,18 @@
 #include <iostream>
 #include <iomanip>
 #include <iterator>
+#include <numeric>
 #include <vector>
 
 // ----------------------------------------------------------------------------
 
 namespace competitor
 {
+    template <typename T>
+    T accumulate(T* array, int size) {
+        return std::accumulate(array, array + size, T(0));
+    }
+
     template <typename T>
     T pre_increment_index(T* array, int size) {
         T result(0);
@@ -220,6 +226,7 @@ int main()
 {
     std::cout << "processor=" << cpu::tube::processor() << '\n';
 
+    test::measure("accumulate", competitor::accumulate<int>);
     test::measure("pre increment index", competitor::pre_increment_index<int>);
     test::measure("pre increment less index", competitor::pre_increment_less_index<int>);
     test::measure("post increment index", competitor::post_increment_index<int>);
