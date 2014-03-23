@@ -172,9 +172,11 @@ int main()
     test::baseline(text);
     test::measure("function", text, test::isalnum);
     test::measure("function pointer", text, &test::isalnum);
+#if !defined(__INTEL_COMPILER)
     test::measure("member pointer", text, std::bind(&test::member::isalnum, test::member(), std::placeholders::_1));
     test::measure("inline member pointer", text, std::bind(&test::inline_member::isalnum, test::inline_member(), std::placeholders::_1));
     test::measure("virtual member pointer", text, std::bind(&test::virtual_member::isalnum, test::virtual_member(), std::placeholders::_1));
+#endif
     test::measure("lambda", text,
                   [](unsigned char c) { return std::isalnum(c); });
     test::measure("lambda via functin pointer", text,
@@ -183,17 +185,21 @@ int main()
     test::measure("function object (inline)", text, test::inline_isalnum_t());
     test::measure("function object (virtual)", text, test::virtual_isalnum_t());
     test::isalnum_t function_object;
+#if !defined(__INTEL_COMPILER)
     test::measure("ref(function object)", text, std::ref(function_object));
     test::inline_isalnum_t inline_function_object;
     test::measure("ref(function object (inline))", text, std::ref(inline_function_object));
     test::virtual_isalnum_t virtual_function_object;
     test::measure("ref(function object (virtual))", text, std::ref(virtual_function_object));
+#endif
+#if !defined(__INTEL_COMPILER)
     test::measure("function(naive)", text,
                   std::function<int(unsigned char)>(&test::isalnum));
     test::measure("function(naive2)", text,
                   std::function<int(unsigned char)>(test::isalnum));
     test::measure("function(functor)", text,
                   std::function<int(unsigned char)>(test::isalnum_t()));
+#endif
     test::measure("boost::function(naive)", text,
                   boost::function<int(unsigned char)>(&test::isalnum));
     test::measure("boost::function(functor)", text,

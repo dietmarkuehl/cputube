@@ -27,17 +27,42 @@
 #include "cpu/tube/timer.hpp"
 
 #include <algorithm>
+#if !defined(__INTEL_COMPILER)
 #include <array>
+#endif
 #include <deque>
+#if !defined(__INTEL_COMPILER)
 #include <forward_list>
+#endif
 #include <iomanip>
 #include <iostream>
 #include <iterator>
 #include <list>
 #include <numeric>
 #include <set>
+#if !defined(__INTEL_COMPILER)
 #include <unordered_set>
+#endif
 #include <vector>
+#if !defined(__INTEL_COMPILER)
+#include "google/cpp-btree/btree_set.h"
+#endif
+
+// ----------------------------------------------------------------------------
+
+#if defined(__INTEL_COMPILER)
+namespace std
+{
+    template <typename T, int Size>
+    T* begin(T (&array)[Size]) {
+        return array;
+    }
+    template <typename T, int Size>
+    T* end(T (&array)[Size]) {
+        return array + Size;
+    }
+}
+#endif
 
 // ----------------------------------------------------------------------------
 
@@ -48,6 +73,7 @@ namespace test
         return Cont(begin, end);
     }
 
+#if !defined(__INTEL_COMPILER)
     template <>
     std::array<int, 1023> initialize<std::array<int, 1023> >(int const* begin,
                                                              int const* end) {
@@ -55,6 +81,7 @@ namespace test
         std::copy(begin, end, rc.begin());
         return rc;
     }
+#endif
 
     template <typename Cont>
     void measure(char const* name) {
@@ -123,12 +150,21 @@ int main()
 {
     std::cout << "processor=" << cpu::tube::processor() << '\n';
 
+#if !defined(__INTEL_COMPILER)
     test::measure<std::array<int, 1023> >("std::array<int, 1023>");
+#endif
     test::measure<std::deque<int> >("std::deque<int>");
+#if !defined(__INTEL_COMPILER)
     test::measure<std::forward_list<int> >("std::forward_list<int>");
+#endif
     test::measure<std::list<int> >("std::list<int>");
     test::measure<std::set<int> >("std::set<int>");
+#if !defined(__INTEL_COMPILER)
     test::measure<std::unordered_set<int> >("std::unordered_set<int>");
+#endif
     test::measure<std::vector<int> >("std::vector<int>");
     test::measure<test::array<int, 1023> >("test::array<int, 1023>");
+#if !defined(__INTEL_COMPILER)
+    test::measure<btree::btree_set<int> >("btree::btree_set<int>");
+#endif
 }

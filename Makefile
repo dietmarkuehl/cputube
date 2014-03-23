@@ -23,15 +23,16 @@
 #   OTHER DEALINGS IN THE SOFTWARE. 
 #  ----------------------------------------------------------------------------
 
-NAME = access-int-array
+NAME = functions
 
 TESTS = \
+	access-int-array \
 	array-foreach \
 	functions \
 	sequence-iteration \
-	access-int-array
 
 #  ----------------------------------------------------------------------------
+
 COMPILER = gcc
 GXX      = g++
 CLANGXX  = clang++
@@ -56,6 +57,7 @@ ifeq ($(COMPILER),clang)
     LDFLAGS  = -stdlib=libc++ -L$(LIBCXX)/lib
 endif
 ifeq ($(COMPILER),intel)
+    # detect: __INTEL_COMPILER
     CXX      = /usr/bin/icc
     DEPFLAGS = -M
     CPPFLAGS += -Icpu/icc-lib
