@@ -31,21 +31,24 @@
 #include <cctype>
 #include <inttypes.h>
 
-using std::placeholders::_1;
-
 // ----------------------------------------------------------------------------
 
 namespace
 {
-    std::ostream& print(std::ostream& out, uint32_t value) {
-        for (int shift(0); shift != 32; shift += 8) {
-            unsigned char c(static_cast<unsigned char>(value >> shift));
-            if (std::isprint(c)) {
-                out << c;
+    struct printer
+    {
+        std::ostream& d_out;
+        printer(std::ostream& out): d_out(out) {}
+        std::ostream& operator()(uint32_t value) {
+            for (int shift(0); shift != 32; shift += 8) {
+                unsigned char c(static_cast<unsigned char>(value >> shift));
+                if (std::isprint(c)) {
+                    this->d_out << c;
+                }
             }
+            return this->d_out;
         }
-        return out;
-    }
+    };
 }
 
 // ----------------------------------------------------------------------------
@@ -79,7 +82,7 @@ static uint32_t print_manufacturer(std::ostream& out)
 {
     uint32_t words[4];
     cpuid(0, words);
-    std::for_each(words + 1, words + 4, std::bind(&::print, std::ref(out), _1));
+    std::for_each(words + 1, words + 4, ::printer(out));
     return words[0];
 }
 

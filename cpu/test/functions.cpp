@@ -177,6 +177,8 @@ int main()
     test::measure("virtual member pointer", text, std::bind(&test::virtual_member::isalnum, test::virtual_member(), std::placeholders::_1));
     test::measure("lambda", text,
                   [](unsigned char c) { return std::isalnum(c); });
+    test::measure("lambda via functin pointer", text,
+                  static_cast<int(*)(unsigned char)>([](unsigned char c) { return std::isalnum(c); }));
     test::measure("function object", text, test::isalnum_t());
     test::measure("function object (inline)", text, test::inline_isalnum_t());
     test::measure("function object (virtual)", text, test::virtual_isalnum_t());

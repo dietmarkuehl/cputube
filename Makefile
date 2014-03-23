@@ -23,7 +23,13 @@
 #   OTHER DEALINGS IN THE SOFTWARE. 
 #  ----------------------------------------------------------------------------
 
-NAME = sequence-iteration
+NAME = access-int-array
+
+TESTS = \
+	array-foreach \
+	functions \
+	sequence-iteration \
+	access-int-array
 
 #  ----------------------------------------------------------------------------
 COMPILER = gcc
@@ -32,18 +38,29 @@ CLANGXX  = clang++
 AR       = ar
 ARFLAGS  = rcu
 
+LIBCXX   = /Users/kuehl/src/llvm/libcxx
+LIBSTDCXX = /opt/gcc-current/include/c++/4.9.0
+
 ifeq ($(COMPILER),gcc)
     CXX      = $(GXX)
+    DEPFLAGS = -M
     CPPFLAGS += -std=c++11
     CXXFLAGS += -W -Wall -O3
     //CXXFLAGS += -fno-tree-vectorize
 endif
 ifeq ($(COMPILER),clang)
-    LIBCXX   = /Users/kuehl/src/llvm/libcxx
     CXX      = $(CLANGXX)
+    DEPFLAGS = -M
     CPPFLAGS += -std=c++11 -I$(LIBCXX)/include
-    CXXFLAGS += -W -Wall -stdlib=libc++ -O3
+    CXXFLAGS += -W -Wall -stdlib=libc++ -O4
     LDFLAGS  = -stdlib=libc++ -L$(LIBCXX)/lib
+endif
+ifeq ($(COMPILER),intel)
+    CXX      = /usr/bin/icc
+    DEPFLAGS = -M
+    CPPFLAGS += -Icpu/icc-lib
+    CXXFLAGS += -std=c++11
+    CXXFLAGS += -O3
 endif
 
 ARCH     = $(shell uname -s)
@@ -57,6 +74,13 @@ LIBFILES = $(CXXFILES:cpu/tube/%.cpp=$(OBJ)/cputube_%.o)
 
 .PHONY: default
 default: check
+
+.PHONY: all
+all:
+	for f in $(TESTS); \
+	do \
+	    $(MAKE) check NAME=$$f; \
+	done
 
 .PHONY: check
 check: $(OBJ)/cputest_$(NAME)
@@ -81,3 +105,11 @@ test: cpuid
 .PHONY: clean
 clean:
 	$(RM) -r $(OBJ)
+
+.PHONY: depend
+depend $(OBJ)/make.depend:
+	@if [ ! -d $(OBJ) ]; then mkdir $(OBJ); fi
+	$(CXX) $(CPPFLAGS) $(DEPFLAGS) $(CXXFILES) | \
+	    scripts/fixdepend  $(OBJ) > $(OBJ)/make.depend
+
+include $(OBJ)/make.depend
