@@ -26,7 +26,7 @@
 NAME = functions
 
 TESTS = \
-	accumlate-int-array \
+	accumulate-int-array \
 	functions \
 	sequence-iteration \
 
