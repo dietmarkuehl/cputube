@@ -23,11 +23,12 @@
 #   OTHER DEALINGS IN THE SOFTWARE. 
 #  ----------------------------------------------------------------------------
 
-NAME = functions
+NAME = search-integer
 
 TESTS = \
 	accumulate-int-array \
 	functions \
+	search-integer \
 	sequence-iteration \
 
 #  ----------------------------------------------------------------------------
