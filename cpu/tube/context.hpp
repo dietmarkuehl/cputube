@@ -1,6 +1,6 @@
-// cpu/tube/timer.hpp                                                 -*-C++-*-
+// cpu/tube/context.hpp                                               -*-C++-*-
 // ----------------------------------------------------------------------------
-//  Copyright (C) 2013 Dietmar Kuehl http://www.dietmar-kuehl.de         
+//  Copyright (C) 2014 Dietmar Kuehl http://www.dietmar-kuehl.de         
 //                                                                       
 //  Permission is hereby granted, free of charge, to any person          
 //  obtaining a copy of this software and associated documentation       
@@ -23,11 +23,16 @@
 //  OTHER DEALINGS IN THE SOFTWARE. 
 // ----------------------------------------------------------------------------
 
-#ifndef INCLUDED_CPU_TUBE_TIMER
-#define INCLUDED_CPU_TUBE_TIMER
+#ifndef INCLUDED_CPU_TUBE_CONTEXT
+#define INCLUDED_CPU_TUBE_CONTEXT
 
-#include <chrono>
-#include <iosfwd>
+#include "cpu/tube/timer.hpp"
+#include <string>
+#include <sstream>
+#include <utility>
+#include <vector>
+
+#define CPUTUBE_CONTEXT_ARGS(ac, av) ac, av, CPUTUBE_COMPILER, CPUTUBE_FLAGS
 
 // ----------------------------------------------------------------------------
 
@@ -35,56 +40,73 @@ namespace cpu
 {
     namespace tube
     {
-        class timer;
-        class duration;
-        std::ostream& operator<< (std::ostream&, cpu::tube::duration const&);
-        std::ostream& operator<< (std::ostream&, cpu::tube::timer const&);
+        class context;
     }
 }
 
 // ----------------------------------------------------------------------------
 
-class cpu::tube::duration
+class cpu::tube::context
 {
 private:
-    typedef std::chrono::high_resolution_clock clock;
-    clock::time_point::duration d_duration;
+    char const* d_compiler;
+    char const* d_flags;
 
+    template <typename... T> static void helper(T&&...) {}
+    template <typename T>
+    static int format(std::vector<std::string>& argv, T&& value);
+
+    void do_report(char const* name, cpu::tube::duration duration,
+                   std::vector<std::string> const& argv);
 public:
-    duration(cpu::tube::timer const& timer);
-    duration(clock::time_point::duration value): d_duration(value) {}
-    std::ostream& print(std::ostream& out) const;
+    context(int ac, char* av[], char const* compiler, char const* flags);
+
+    cpu::tube::timer start();
+
+    template <typename... T>
+    void report(char const* name, cpu::tube::timer& timer, T&&... args);
+    template <typename... T>
+    void report(char const* name, cpu::tube::duration duration, T&&... args);
 };
 
 // ----------------------------------------------------------------------------
 
-class cpu::tube::timer
+template <typename T>
+int
+cpu::tube::context::format(std::vector<std::string>& argv, T&& value)
 {
-private:
-    friend class cpu::tube::duration;
-    typedef std::chrono::high_resolution_clock clock;
-    clock::time_point d_start;
+    std::ostringstream out;
+    out << value;
+    argv.push_back(out.str());
+   
+    return 0;
+}
 
-    timer(timer const&) = delete;
-    void operator=(timer) = delete;
-
-    clock::time_point::duration intern_measure() const {
-        return clock::now() - this->d_start;
-    }
-public:
-    timer(): d_start(clock::now()) {}
-    timer(timer&& other): d_start(other.d_start) {}
-
-    cpu::tube::duration measure() const {
-        return this->intern_measure();
-    }
-};
-
-// ----------------------------------------------------------------------------
-
-inline cpu::tube::duration::duration(cpu::tube::timer const& timer)
-    : d_duration(timer.intern_measure())
+inline cpu::tube::timer
+cpu::tube::context::start()
 {
+    return cpu::tube::timer();
+}
+
+template <typename... T>
+void
+cpu::tube::context::report(char const*       name,
+                           cpu::tube::timer& timer,
+                           T&&...            args)
+{
+    this->report(name, timer.measure(), std::forward<T>(args)...);
+}
+
+template <typename... T>
+void
+cpu::tube::context::report(char const*         name,
+                           cpu::tube::duration duration,
+                           T&&...              args)
+{
+    std::vector<std::string> argv;
+    cpu::tube::context::helper(
+                   cpu::tube::context::format(argv, std::forward<T>(args))...);
+    this->do_report(name, duration, argv);
 }
 
 // ----------------------------------------------------------------------------

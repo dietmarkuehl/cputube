@@ -189,7 +189,7 @@ int main(int ac, char* av[])
         run_tests(size);
     }
     else {
-        for (int i(10); i <= 10000; i *= 10) {
+        for (int i(10); i <= 100; i *= 10) {
             for (int j(1); j < 10; j *= 2) {
                 run_tests(i * j);
             }

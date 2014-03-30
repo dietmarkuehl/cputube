@@ -23,7 +23,7 @@
 //  OTHER DEALINGS IN THE SOFTWARE. 
 // ----------------------------------------------------------------------------
 
-#include "cpu/tube/processor.hpp"
+#include "cpu/tube/context.hpp"
 #include "cpu/tube/timer.hpp"
 
 #include <algorithm>
@@ -84,7 +84,7 @@ namespace test
 #endif
 
     template <typename Cont>
-    void measure(char const* name) {
+    void measure(cpu::tube::context& context, char const* name) {
         int array[1023];
         for (int i(0); i != 1023; ++i) {
             array[i] = i;
@@ -95,15 +95,12 @@ namespace test
         tmp += std::accumulate(cont.begin(), cont.end(), 0);
 
         long total(0);
-        cpu::tube::timer timer;
+        
+        auto timer = context.start();
         for (int i(0); i != 100000; ++i) {
             total += std::accumulate(cont.begin(), cont.end(), 0);
         }
-        cpu::tube::duration duration = timer.measure();
-        std::cout << std::setw(40) << name << ' '
-                  << std::setw(6)  << duration << ' '
-                  << std::setw(10) << total << '\n';
-            
+        context.report(name, timer, total);
     }
 }
 
@@ -146,25 +143,25 @@ namespace test
 
 // ----------------------------------------------------------------------------
 
-int main()
+int main(int ac, char* av[])
 {
-    std::cout << "processor=" << cpu::tube::processor() << '\n';
+    cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
 
 #if !defined(__INTEL_COMPILER)
-    test::measure<std::array<int, 1023> >("std::array<int, 1023>");
+    test::measure<std::array<int, 1023> >(context, "std::array<int, 1023>");
 #endif
-    test::measure<std::deque<int> >("std::deque<int>");
+    test::measure<std::deque<int> >(context, "std::deque<int>");
 #if !defined(__INTEL_COMPILER)
-    test::measure<std::forward_list<int> >("std::forward_list<int>");
+    test::measure<std::forward_list<int> >(context, "std::forward_list<int>");
 #endif
-    test::measure<std::list<int> >("std::list<int>");
-    test::measure<std::set<int> >("std::set<int>");
+    test::measure<std::list<int> >(context, "std::list<int>");
+    test::measure<std::set<int> >(context, "std::set<int>");
 #if !defined(__INTEL_COMPILER)
-    test::measure<std::unordered_set<int> >("std::unordered_set<int>");
+    test::measure<std::unordered_set<int> >(context, "std::unordered_set<int>");
 #endif
-    test::measure<std::vector<int> >("std::vector<int>");
-    test::measure<test::array<int, 1023> >("test::array<int, 1023>");
+    test::measure<std::vector<int> >(context, "std::vector<int>");
+    test::measure<test::array<int, 1023> >(context, "test::array<int, 1023>");
 #if !defined(__INTEL_COMPILER)
-    test::measure<btree::btree_set<int> >("btree::btree_set<int>");
+    test::measure<btree::btree_set<int> >(context, "btree::btree_set<int>");
 #endif
 }

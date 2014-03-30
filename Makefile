@@ -23,7 +23,7 @@
 #   OTHER DEALINGS IN THE SOFTWARE. 
 #  ----------------------------------------------------------------------------
 
-NAME = search-integer
+NAME = sequence-iteration
 
 TESTS = \
 	accumulate-int-array \
@@ -45,32 +45,44 @@ LIBSTDCXX = /opt/gcc-current/include/c++/4.9.0
 ifeq ($(COMPILER),gcc)
     CXX      = $(GXX)
     DEPFLAGS = -M
+    xCXXFLAGS += -O3
+    xOPTFLAGS = -g -finline-functions
+    LTOFLAGS = -flto
+    OPTFLAGS = -O3 $(LTOFLAGS)
+
     CPPFLAGS += -std=c++11
-    CXXFLAGS += -W -Wall -O3
-    //CXXFLAGS += -fno-tree-vectorize
+    CXXFLAGS += -W -Wall $(OPTFLAGS) $(LTOFLAGS)
+    LDFLAGS  += $(LTOFLAGS)
+    xCXXFLAGS += -fno-tree-vectorize
 endif
 ifeq ($(COMPILER),clang)
     CXX      = $(CLANGXX)
     DEPFLAGS = -M
+    OPTFLAGS = -O4
+
     CPPFLAGS += -std=c++11 -I$(LIBCXX)/include
-    CXXFLAGS += -W -Wall -stdlib=libc++ -O4
+    CXXFLAGS += -W -Wall -stdlib=libc++ $(OPTFLAGS)
     LDFLAGS  = -stdlib=libc++ -L$(LIBCXX)/lib
 endif
 ifeq ($(COMPILER),intel)
     # detect: __INTEL_COMPILER
     CXX      = /usr/bin/icc
     DEPFLAGS = -M
+    OPTFLAGS = -O3
     CPPFLAGS += -Icpu/icc-lib
-    CXXFLAGS += -std=c++11
-    CXXFLAGS += -O3
+    CXXFLAGS += -std=c++11 $(OPTFLAGS)
 endif
 
+CPPFLAGS += -DCPUTUBE_COMPILER='"$(COMPILER)"' -DCPUTUBE_FLAGS='"$(OPTFLAGS)"'
+
+OPTEXT   = $(shell echo $(OPTFLAGS) | tr -d '-' | tr ' ' '-')
 ARCH     = $(shell uname -s)
-OBJ      = $(ARCH)-$(COMPILER)
+OBJ      = $(ARCH)-$(COMPILER)-$(OPTEXT)
 CPPFLAGS += -I.
 CXXFILES = \
-	cpu/tube/timer.cpp \
+	cpu/tube/context.cpp   \
 	cpu/tube/processor.cpp \
+	cpu/tube/timer.cpp     \
 
 LIBFILES = $(CXXFILES:cpu/tube/%.cpp=$(OBJ)/cputube_%.o)
 
