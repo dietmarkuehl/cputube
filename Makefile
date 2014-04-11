@@ -23,12 +23,13 @@
 #   OTHER DEALINGS IN THE SOFTWARE. 
 #  ----------------------------------------------------------------------------
 
-NAME = sequence-iteration
+NAME = write-ints
 
 TESTS = \
 	accumulate-int-array \
 	functions \
 	search-integer \
+	search-short-string \
 	sequence-iteration \
 
 #  ----------------------------------------------------------------------------
@@ -51,6 +52,7 @@ ifeq ($(COMPILER),gcc)
     OPTFLAGS = -O3 $(LTOFLAGS)
 
     CPPFLAGS += -std=c++11
+    CPPLFAGS += -DIS_GCC
     CXXFLAGS += -W -Wall $(OPTFLAGS) $(LTOFLAGS)
     LDFLAGS  += $(LTOFLAGS)
     xCXXFLAGS += -fno-tree-vectorize
@@ -64,7 +66,13 @@ ifeq ($(COMPILER),clang)
     CXXFLAGS += -W -Wall -stdlib=libc++ $(OPTFLAGS)
     LDFLAGS  = -stdlib=libc++ -L$(LIBCXX)/lib
 endif
+ifeq ($(COMPILER),icc)
+    IS_INTEL=yes
+endif
 ifeq ($(COMPILER),intel)
+    IS_INTEL=yes
+endif
+ifeq ($(IS_INTEL),yes)
     # detect: __INTEL_COMPILER
     CXX      = /usr/bin/icc
     DEPFLAGS = -M
@@ -98,7 +106,7 @@ all:
 
 .PHONY: check
 check: $(OBJ)/cputest_$(NAME)
-	$(OBJ)/cputest_$(NAME)
+	$(OBJ)/cputest_$(NAME) | tee $(HOME)/aaa/$(COMPILER).csv
 
 $(OBJ)/cputest_$(NAME): $(OBJ)/libcputube.a $(OBJ)/cputest_$(NAME).o
 	$(CXX) -o $@ $(LDFLAGS) $(OBJ)/cputest_$(NAME).o -L$(OBJ) -lcputube

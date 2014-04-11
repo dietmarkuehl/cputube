@@ -44,13 +44,20 @@ cpu::tube::context::context(int, char*[],
 }
 
 void
+cpu::tube::context::stub(char const* name)
+{
+    std::cout << std::setw(0) << name << ',';
+    std::cout << '\n';
+}
+
+void
 cpu::tube::context::do_report(char const*                     name,
                               cpu::tube::duration             duration,
                               std::vector<std::string> const& argv)
 {
-    std::cout << std::setw(40) << name
-              << std::setw(8) << duration << ' ';
+    std::cout << std::setw(0) << name << ','
+              << std::setw(0) << duration << ',';
     std::copy(argv.begin(), argv.end(),
-              std::ostream_iterator<std::string>(std::cout, " "));
-    std::cout << '\n';
+              std::ostream_iterator<std::string>(std::cout, ","));
+    std::cout << '\n' << std::flush;
 }

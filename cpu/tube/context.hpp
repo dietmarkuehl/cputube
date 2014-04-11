@@ -63,6 +63,7 @@ public:
 
     cpu::tube::timer start();
 
+    void stub(char const* name);
     template <typename... T>
     void report(char const* name, cpu::tube::timer& timer, T&&... args);
     template <typename... T>

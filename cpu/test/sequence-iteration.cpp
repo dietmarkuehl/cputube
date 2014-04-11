@@ -24,7 +24,6 @@
 // ----------------------------------------------------------------------------
 
 #include "cpu/tube/context.hpp"
-#include "cpu/tube/timer.hpp"
 
 #include <algorithm>
 #if !defined(__INTEL_COMPILER)
@@ -68,16 +67,59 @@ namespace std
 
 namespace test
 {
-    template <typename Cont>
-    Cont initialize(int const* begin, int const* end) {
+    template <typename Cont, typename T>
+    Cont initialize(T const* begin, T const* end) {
         return Cont(begin, end);
     }
 
 #if !defined(__INTEL_COMPILER)
     template <>
-    std::array<int, 1023> initialize<std::array<int, 1023> >(int const* begin,
-                                                             int const* end) {
+    std::array<int, 1023> initialize<std::array<int, 1023>, int>(int const* begin,
+                                                                 int const* end) {
         std::array<int, 1023> rc;
+        std::copy(begin, end, rc.begin());
+        return rc;
+    }
+    template <>
+    std::array<float, 1023> initialize<std::array<float, 1023>, float>(float const* begin,
+                                                                       float const* end) {
+        std::array<float, 1023> rc;
+        std::copy(begin, end, rc.begin());
+        return rc;
+    }
+    template <>
+    std::array<double, 1023> initialize<std::array<double, 1023>, double>(double const* begin,
+                                                                          double const* end) {
+        std::array<double, 1023> rc;
+        std::copy(begin, end, rc.begin());
+        return rc;
+    }
+
+    template <>
+    std::array<int, 511> initialize<std::array<int, 511>, int>(int const* begin,
+                                                               int const* end) {
+        std::array<int, 511> rc;
+        std::copy(begin, end, rc.begin());
+        return rc;
+    }
+    template <>
+    std::array<long long, 511> initialize<std::array<long long, 511>, long long>(long long const* begin,
+                                                               long long const* end) {
+        std::array<long long, 511> rc;
+        std::copy(begin, end, rc.begin());
+        return rc;
+    }
+    template <>
+    std::array<float, 511> initialize<std::array<float, 511>, float>(float const* begin,
+                                                                     float const* end) {
+        std::array<float, 511> rc;
+        std::copy(begin, end, rc.begin());
+        return rc;
+    }
+    template <>
+    std::array<double, 511> initialize<std::array<double, 511>, double>(double const* begin,
+                                                                        double const* end) {
+        std::array<double, 511> rc;
         std::copy(begin, end, rc.begin());
         return rc;
     }
@@ -85,8 +127,8 @@ namespace test
 
     template <typename Cont>
     void measure(cpu::tube::context& context, char const* name) {
-        int array[1023];
-        for (int i(0); i != 1023; ++i) {
+        typename Cont::value_type array[511];
+        for (int i(0); i != std::end(array) - std::begin(array); ++i) {
             array[i] = i;
         }
 
@@ -133,6 +175,7 @@ namespace test
     template <typename T, int Size>
     struct array
     {
+        typedef T value_type;
         T values[Size]; 
         template <typename InIt>
         array(InIt it, InIt end) { std::copy(it, end, this->values); }
@@ -143,25 +186,48 @@ namespace test
 
 // ----------------------------------------------------------------------------
 
+namespace test
+{
+    template <typename T>
+    void measure_type(cpu::tube::context& context, char const* type)
+    {
+        std::cout << type << '\n';
+
+#if !defined(__INTEL_COMPILER)
+        test::measure<std::array<T, 511> >(context, "std::array<T  511>");
+#else
+        context.stub("std::array<T  511>");
+#endif
+        test::measure<std::deque<T> >(context, "std::deque<T>");
+#if !defined(__INTEL_COMPILER)
+        test::measure<std::forward_list<T> >(context, "std::forward_list<T>");
+#else
+        context.stub("std::forward_list<T>");
+#endif
+        test::measure<std::list<T> >(context, "std::list<T>");
+        test::measure<std::set<T> >(context, "std::set<T>");
+#if !defined(__INTEL_COMPILER)
+        test::measure<std::unordered_set<T> >(context, "std::unordered_set<T>");
+#else
+        context.stub("std::unordered_set<T>");
+#endif
+        test::measure<std::vector<T> >(context, "std::vector<T>");
+        test::measure<test::array<T, 511> >(context, "test::array<T  511>");
+#if !defined(__INTEL_COMPILER)
+        test::measure<btree::btree_set<T> >(context, "btree::btree_set<T>");
+#else
+        context.stub("btree::btree_set<T>");
+#endif
+    }
+}
+
+// ----------------------------------------------------------------------------
+
 int main(int ac, char* av[])
 {
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
-
-#if !defined(__INTEL_COMPILER)
-    test::measure<std::array<int, 1023> >(context, "std::array<int, 1023>");
-#endif
-    test::measure<std::deque<int> >(context, "std::deque<int>");
-#if !defined(__INTEL_COMPILER)
-    test::measure<std::forward_list<int> >(context, "std::forward_list<int>");
-#endif
-    test::measure<std::list<int> >(context, "std::list<int>");
-    test::measure<std::set<int> >(context, "std::set<int>");
-#if !defined(__INTEL_COMPILER)
-    test::measure<std::unordered_set<int> >(context, "std::unordered_set<int>");
-#endif
-    test::measure<std::vector<int> >(context, "std::vector<int>");
-    test::measure<test::array<int, 1023> >(context, "test::array<int, 1023>");
-#if !defined(__INTEL_COMPILER)
-    test::measure<btree::btree_set<int> >(context, "btree::btree_set<int>");
-#endif
+    test::measure_type<int>(context, "int");
+    test::measure_type<long long>(context, "long long");
+    test::measure_type<float>(context, "float");
+    test::measure_type<double>(context, "double");
 }
