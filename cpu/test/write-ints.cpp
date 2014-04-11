@@ -28,10 +28,12 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <locale>
 #include <stdexcept>
 #include <vector>
 #include <stdio.h>
 #include <stdlib.h>
+#include <boost/lexical_cast.hpp>
 
 namespace
 {
@@ -59,6 +61,34 @@ namespace
         }
     };
 #endif
+
+    struct boost_lexical_cast
+    {
+        std::ofstream d_out;
+        boost_lexical_cast(char const* name): d_out(name) {}
+        void process(std::vector<int> const& values) {
+            for (int x: values) {
+                this->d_out << boost::lexical_cast<std::string>(x) << ' ';
+            }
+            this->d_out << '\n';
+        }
+    };
+ 
+    struct num_put_copy
+    {
+        std::ofstream d_out;
+        num_put_copy(char const* name): d_out(name) {}
+        void process(std::vector<int> const& values) {
+            char buffer[1000 * 12], * end(buffer);
+            std::num_put<char, char*> const& np(std::use_facet<std::num_put<char, char*>>(std::locale()));
+            for (long x: values) {
+                end = np.put(end, this->d_out, ' ', x);
+                *end++ = ' ';
+            }
+            *end++ = '\n';
+            std::copy(buffer, end, std::ostreambuf_iterator<char>(d_out));
+        }
+    };
  
     struct fprintf_values
     {
@@ -129,12 +159,16 @@ int main(int ac, char* av[])
     char const* name(ac == 1? "/dev/null": av[1]);
     std::vector<int>   values;
     std::generate_n(std::back_inserter(values), 1000, &rand);
+    std::locale::global(std::locale(std::locale(), new std::num_put<char, char*>()));
+
     measure<copy_ostream_iterator>(context, "copy ostream_iterator", name, values);
 #if !defined(__INTEL_COMPILER)
     measure<to_string_stream>(context, "to_string()/ofstream", name, values);
 #else
     context.stub("to_string()/ofstream");
 #endif
+    measure<boost_lexical_cast>(context, "boost_lexical_cast()/ofstream", name, values);
+    measure<num_put_copy>(context, "num_put()/ofstream", name, values);
     measure<fprintf_values>(context, "fprintf values", name, values);
     measure<snprintf_values>(context, "snprintf/fputs values", name, values);
 }

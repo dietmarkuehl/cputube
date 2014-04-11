@@ -71,6 +71,15 @@ namespace
         }
     };
 
+    struct FStreambufSputn
+    {
+        std::ofstream d_stream;
+        FStreambufSputn(char const* filename): d_stream(filename) {}
+        void process(char const* line) {
+            this->d_stream.rdbuf()->sputn(line, strlen(line));
+        }
+    };
+
     struct FStreamPut
     {
         std::ofstream d_stream;
@@ -78,6 +87,18 @@ namespace
         void process(char const* line) {
             for (; *line; ++line) {
                 this->d_stream.put(*line);
+            }
+        }
+    };
+
+    struct FStreambufSputc
+    {
+        std::ofstream d_stream;
+        FStreambufSputc(char const* filename): d_stream(filename) {}
+        void process(char const* line) {
+            std::streambuf* sbuf = this->d_stream.rdbuf();
+            for (; *line; ++line) {
+                sbuf->sputc(*line);
             }
         }
     };
@@ -245,18 +266,20 @@ int main(int ac, char* av[])
     {
         cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
         char const* name(ac == 1? "/dev/null": av[1]);
-        measure<FStreamWrite>(context, "std::ofstream::write", name);
-        measure<FStreamPut>(context, "std::ofstream::put", name);
-        measure<FStreamOStreamIterator>(context, "std::ostream_iterator", name);
-        measure<FStreamOStreambufIterator>(context, "std::ostreambuf_iterator", name);
-        measure<FStreamOStreambufIteratorLoop>(context, "std::ostreambuf_iterator loop", name);
+        measure<FILEWrite>(context, "::write", name);
         measure<FILEFPrintf>(context, "std::fprintf", name);
         measure<FILEFPuts>(context, "std::fputs", name);
         measure<FILEFWrite>(context, "std::fwrite", name);
         measure<FILEFputc>(context, "std::fputc", name);
         measure<FILEPutc>(context, "std::putc", name);
         measure<FILEPutcUnlocked>(context, "std::putc_unlocked", name);
-        measure<FILEWrite>(context, "::write", name);
+        measure<FStreamWrite>(context, "std::ofstream::write", name);
+        measure<FStreambufSputn>(context, "std::streambuf::sputn", name);
+        measure<FStreamPut>(context, "std::ofstream::put", name);
+        measure<FStreambufSputc>(context, "std::streambuf::sputc", name);
+        measure<FStreamOStreamIterator>(context, "std::ostream_iterator", name);
+        measure<FStreamOStreambufIterator>(context, "std::ostreambuf_iterator", name);
+        measure<FStreamOStreambufIteratorLoop>(context, "std::ostreambuf_iterator loop", name);
     }
     catch (std::exception const& ex)
     {
