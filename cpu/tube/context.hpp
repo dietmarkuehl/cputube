@@ -52,9 +52,9 @@ private:
     char const* d_compiler;
     char const* d_flags;
 
-    template <typename... T> static void helper(T&&...) {}
-    template <typename T>
-    static int format(std::vector<std::string>& argv, T&& value);
+    static void format(std::vector<std::string>&) {}
+    template <typename H, typename... T>
+    static void format(std::vector<std::string>& argv, H&& value, T&&... tail);
 
     void do_report(char const* name, cpu::tube::duration duration,
                    std::vector<std::string> const& argv);
@@ -72,15 +72,15 @@ public:
 
 // ----------------------------------------------------------------------------
 
-template <typename T>
-int
-cpu::tube::context::format(std::vector<std::string>& argv, T&& value)
+template <typename H, typename... T>
+void
+cpu::tube::context::format(std::vector<std::string>& argv,
+                           H&& value, T&&... tail)
 {
     std::ostringstream out;
     out << value;
     argv.push_back(out.str());
-   
-    return 0;
+    format(argv, std::forward<T>(tail)...);
 }
 
 inline cpu::tube::timer
@@ -105,8 +105,7 @@ cpu::tube::context::report(char const*         name,
                            T&&...              args)
 {
     std::vector<std::string> argv;
-    cpu::tube::context::helper(
-                   cpu::tube::context::format(argv, std::forward<T>(args))...);
+    cpu::tube::context::format(argv, std::forward<T>(args)...);
     this->do_report(name, duration, argv);
 }
 

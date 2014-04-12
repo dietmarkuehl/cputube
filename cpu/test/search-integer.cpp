@@ -134,7 +134,7 @@ namespace
         }
 
         auto timer = context.start();
-        for (int i(0); i != 100; ++i) {
+        for (int i(0); i != 1000; ++i) {
             for (const_iterator it(sought.begin()), end(sought.end());
                  it != end; ++it) {
                 if (competitor.contains(*it)) {
@@ -143,7 +143,7 @@ namespace
             }
         }
 
-        context.report(name, timer, size);
+        context.report(name, timer, total, size);
     }
 
     void run_tests(cpu::tube::context& context, int size) {

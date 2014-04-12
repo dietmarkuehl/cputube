@@ -164,7 +164,7 @@ namespace
         }
 
         auto timer = context.start();
-        for (int i(0); i != 100; ++i) {
+        for (int i(0); i != 1000; ++i) {
             for (const_iterator it(sought.begin()), end(sought.end());
                  it != end; ++it) {
                 if (competitor.contains(*it)) {
@@ -173,7 +173,7 @@ namespace
             }
         }
 
-        context.report(name, timer, size, total);
+        context.report(name, timer, total, size);
     }
 
     void run_tests(cpu::tube::context& context, int size,
@@ -195,15 +195,24 @@ namespace
             sought.push_back(strings[rand() % range]);
         }
 
-        measure(context, sought, "vector find()",              size, vector_find(values));
+        if (size < 400) {
+            measure(context, sought, "vector find()",              size, vector_find(values));
+        }
+        else {
+            context.stub("vector find()");
+        }
         measure(context, sought, "vector lower_bound()",       size, vector_lower_bound(values));
         measure(context, sought, "set find()",                 size, set_find(values));
 #if !defined(__INTEL_COMPILER)
         measure(context, sought, "unordered set find()",       size, unordered_set_find(values));
+#else
+        context.stub("unordered set find()");
 #endif
         measure(context, sought, "boost unordered set find()", size, boost_unordered_set_find(values));
 #if !defined(__INTEL_COMPILER)
         measure(context, sought, "b-tree set find()",          size, btree_set_find(values));
+#else
+        context.stub("b-tree set find()");
 #endif
     }
 
@@ -212,7 +221,7 @@ namespace
         string_type codes[] = {
             "BE", "DE", "DK", "FR", "GB", "JP", "NL", "NO", "SE", "US"
         };
-        std::vector<string_type> rc;
+        boost::unordered_set<string_type> rc;
         while (rc.size() < size) {
             std::ostringstream out;
             out.fill('0');
@@ -220,10 +229,10 @@ namespace
                 << (std::rand() % 1000000000) << '0';
             string_type value(out.str().c_str());
             if (std::find(rc.begin(), rc.end(), value) == rc.end()) {
-                rc.push_back(value);
+                rc.insert(value);
             }
         }
-        return rc;
+        return std::vector<string_type>(rc.begin(), rc.end());
     }
 }
 
@@ -233,7 +242,7 @@ int main(int ac, char* av[])
 {
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
     int size(ac == 1? 0: atoi(av[1]));
-    int const max = 100;
+    int const max = 1000;
     std::vector<string_type> strings(make_strings(2 * (size? size: max * 20)));
     if (size) {
         run_tests(context, size, strings);
