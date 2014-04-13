@@ -27,6 +27,8 @@
 #define INCLUDED_CPU_TUBE_CONTEXT
 
 #include "cpu/tube/timer.hpp"
+#include "cpu/tube/heap_fragment.hpp"
+
 #include <string>
 #include <sstream>
 #include <utility>
@@ -51,7 +53,8 @@ class cpu::tube::context
 private:
     char const* d_compiler;
     char const* d_flags;
-
+	heap_fragmenter fragment;
+	
     static void format(std::vector<std::string>&) {}
     template <typename H, typename... T>
     static void format(std::vector<std::string>& argv, H&& value, T&&... tail);
