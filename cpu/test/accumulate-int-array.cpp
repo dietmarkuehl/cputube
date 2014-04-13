@@ -276,6 +276,22 @@ namespace competitor
         }
         return result;
     }
+    
+    template <typename T>
+    T unrolled_index3(T* array, int size) {
+        T r1(0),r2(0),r3(0),r4(0);
+        int index(0);
+        for (; 4 <= size - index; index += 4) {
+            r1 += array[index + 0];
+            r2 += array[index + 1];
+            r3 += array[index + 2];
+            r4 += array[index + 3];
+        }
+        for (; index != size; ++index) {
+            r1 += array[index];
+        }
+        return r1+r2+r3+r4;
+    }    
 }
 
 // ----------------------------------------------------------------------------
@@ -326,6 +342,7 @@ namespace test
         test::measure(context, "unrolled index", competitor::unrolled_index<T>);
         test::measure(context, "unrolled pointer2", competitor::unrolled_pointer2<T>);
         test::measure(context, "unrolled index2", competitor::unrolled_index2<T>);
+        test::measure(context, "unrolled index3", competitor::unrolled_index3<T>);
     }
 }
 
