@@ -1,6 +1,6 @@
-// cpu/tube/context.cpp                                               -*-C++-*-
+// cpu/tube/heap_fragment.cpp                                         -*-C++-*-
 // ----------------------------------------------------------------------------
-//  Copyright (C) 2014 Dietmar Kuehl http://www.dietmar-kuehl.de         
+//  Copyright (C) 2014 Thaddaeus Frogley         
 //                                                                       
 //  Permission is hereby granted, free of charge, to any person          
 //  obtaining a copy of this software and associated documentation       
@@ -23,45 +23,35 @@
 //  OTHER DEALINGS IN THE SOFTWARE. 
 // ----------------------------------------------------------------------------
 
-#include "cpu/tube/context.hpp"
-#include "cpu/tube/processor.hpp"
-#include <iostream>
-#include <iomanip>
-#include <iterator>
-#include <algorithm>
+#include "cpu/tube/heap_fragment.hpp"
+#include <cstdlib>
 
 // ----------------------------------------------------------------------------
-
-cpu::tube::context::context(int, char*[],
-                            char const* compiler, char const* flags)
-    : d_compiler(compiler)
-    , d_flags(flags)
-
-	// this will leave a the heap in a fragmented state
-	// with many small allocations (1b-64k) littered around at random
-    , fragment(1024*1024, 64*1024)
+//
+heap_fragmenter::heap_fragmenter( int count, int size )
 {
-    std::cout << "processor=" << cpu::tube::processor() << ' '
-              << "compiler=" << compiler << ' '
-              << "flags=" << flags << ' '
-              << '\n';
+	// create 'count' allocations of 1..size bytes
+	allocated.reserve(count*2);
+	for (int i=0;i!=count*2;++i)
+		allocated.push_back( new char[ 1 + rand()%(size-1) ] );
+
+	// shuffle them up
+	std::random_shuffle(allocated.begin(), allocated.end());
+
+	// remove half
+	for (int i=0;i!=count;++i)
+	{
+		delete[] allocated.back();
+		allocated.pop_back();
+	}
 }
 
-void
-cpu::tube::context::stub(char const* name)
+heap_fragmenter::~heap_fragmenter()
 {
-    std::cout << std::setw(0) << name << ',';
-    std::cout << '\n';
+	while (allocated.empty()==false)
+	{
+		delete[] allocated.back();
+		allocated.pop_back();
+	}
 }
 
-void
-cpu::tube::context::do_report(char const*                     name,
-                              cpu::tube::duration             duration,
-                              std::vector<std::string> const& argv)
-{
-    std::cout << std::setw(0) << name << ','
-              << std::setw(0) << duration << ',';
-    std::copy(argv.begin(), argv.end(),
-              std::ostream_iterator<std::string>(std::cout, ","));
-    std::cout << '\n' << std::flush;
-}

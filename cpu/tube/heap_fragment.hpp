@@ -1,6 +1,6 @@
-// cpu/tube/context.cpp                                               -*-C++-*-
+// cpu/tube/heap_fragment.hpp                                         -*-C++-*-
 // ----------------------------------------------------------------------------
-//  Copyright (C) 2014 Dietmar Kuehl http://www.dietmar-kuehl.de         
+//  Copyright (C) 2014 Thaddaeus Frogley         
 //                                                                       
 //  Permission is hereby granted, free of charge, to any person          
 //  obtaining a copy of this software and associated documentation       
@@ -23,45 +23,26 @@
 //  OTHER DEALINGS IN THE SOFTWARE. 
 // ----------------------------------------------------------------------------
 
-#include "cpu/tube/context.hpp"
-#include "cpu/tube/processor.hpp"
-#include <iostream>
-#include <iomanip>
-#include <iterator>
-#include <algorithm>
+#ifndef INCLUDED_HEAP_FRAGMENT_TUBE
+#define INCLUDED_HEAP_FRAGMENT_TUBE
+
+#include <vector>
 
 // ----------------------------------------------------------------------------
+// Creating this object leaves the heap in a fragmented state, with N allocations
+//  of 1...S bytes still allocated, remaining allocations are freed on destruction
+// the goal is to approximate the memory conditions of a live application
+// so cache coherency of heap allocated data structure access can be tested 
+// under closer to real world conditions
 
-cpu::tube::context::context(int, char*[],
-                            char const* compiler, char const* flags)
-    : d_compiler(compiler)
-    , d_flags(flags)
-
-	// this will leave a the heap in a fragmented state
-	// with many small allocations (1b-64k) littered around at random
-    , fragment(1024*1024, 64*1024)
+class heap_fragmenter
 {
-    std::cout << "processor=" << cpu::tube::processor() << ' '
-              << "compiler=" << compiler << ' '
-              << "flags=" << flags << ' '
-              << '\n';
-}
+	public:
+	heap_fragmenter( int n, int s );
+	~heap_fragmenter();
+	
+	private:
+	std::vector< char* > allocated;
+};
 
-void
-cpu::tube::context::stub(char const* name)
-{
-    std::cout << std::setw(0) << name << ',';
-    std::cout << '\n';
-}
-
-void
-cpu::tube::context::do_report(char const*                     name,
-                              cpu::tube::duration             duration,
-                              std::vector<std::string> const& argv)
-{
-    std::cout << std::setw(0) << name << ','
-              << std::setw(0) << duration << ',';
-    std::copy(argv.begin(), argv.end(),
-              std::ostream_iterator<std::string>(std::cout, ","));
-    std::cout << '\n' << std::flush;
-}
+#endif // INCLUDED_HEAP_FRAGMENT_TUBE
