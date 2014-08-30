@@ -92,7 +92,7 @@ CXXFILES = \
 	cpu/tube/processor.cpp \
 	cpu/tube/timer.cpp     \
 	cpu/tube/heap_fragment.cpp     \
-	
+
 LIBFILES = $(CXXFILES:cpu/tube/%.cpp=$(OBJ)/cputube_%.o)
 
 .PHONY: default

@@ -27,11 +27,15 @@
 #include <iostream>
 
 // ----------------------------------------------------------------------------
+unsigned long long cpu::tube::duration::microseconds() const
+{
+    using namespace std::chrono;
+    return duration_cast<std::chrono::microseconds>(this->d_duration).count();
+}
 
 std::ostream& cpu::tube::duration::print(std::ostream& out) const
 {
-    using namespace std::chrono;
-    return out << duration_cast<microseconds>(this->d_duration).count();
+    return out << this->microseconds();
 }
 
 std::ostream& cpu::tube::operator<< (std::ostream&              out,

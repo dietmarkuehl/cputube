@@ -54,6 +54,7 @@ public:
     duration(cpu::tube::timer const& timer);
     duration(clock::time_point::duration value): d_duration(value) {}
     std::ostream& print(std::ostream& out) const;
+    unsigned long long microseconds() const;
 };
 
 // ----------------------------------------------------------------------------
