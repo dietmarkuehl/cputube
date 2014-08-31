@@ -1,0 +1,64 @@
+<h1>Function Call Overhead</h1>
+
+The measurements on this page are based on tests from the
+<a href="http://www.open-std.org/JTC1/SC22/WG21/docs/TR18015.pdf">C++ Performance TR1</a>.
+This page specificallly contains tests similar to those from section 5.3
+(Classes and Interfaces) measuring the overhead of different approaches to call
+functions.
+
+<p>
+
+The tests are not identical to those used by the performance TR, primarily to
+address some slightly questionable pratices (e.g., not initializing variables)
+and to fit them into the commonly used framework. Also, compilers have become a
+lot smarter and actually see through a number of the uses and entirely optimize
+away what is intended to be measured. Thus, the tests use xor instead of
+addition because compilers see through the use addition and optimize the entire
+loop out while they don't optimize this use of xor.
+
+<p>
+
+<h2>What's Being Tested</h2>
+
+All the tests do the moral equivalent of this loop
+
+<pre>
+unsigned int x(0u);
+unsigned int n(10000000u);
+for (unsigned int i(0u); i != n; ++i) {
+    x ^= i;
+}
+</pre>
+
+
+with the core of the loop (<code>x ^= i;</code>) replaced by a function call
+using an object suitable for the function call to be worked on.
+
+<h2>Report Conventions</h2>
+
+<h3>Object Names</h3>
+The naming convention for the names of objects is as follows:
+
+<table>
+  <tr><td>x</td><td>an object of base type <code>X</code></tr>
+  <tr><td>xp</td><td>a pointer to an object of type <code>X</code></tr>
+  <tr><td>y</td><td>an object of derived type <code>Y</code> using <code>X</code> as a base</tr>
+  <tr><td>yp</td><td>a pointer of derived type <code>Y</code> using <code>X</code> as a base</tr>
+  <tr><td>o</td><td>an object of type <code>S</code></tr>
+</table>
+
+<h3>Function Names</h3>
+The components of the function names being called is as follows:
+
+<table>
+  <tr><td> nm</td><td>non-member</td></tr>
+  <tr><td>s</td><td>static</td></tr>
+  <tr><td>nv</td><td>non-virtual</td></tr>
+  <tr><td>v</td><td>virtual</td></tr>
+  <tr><td>o</td><td>defined in other source file</td></tr>
+  <tr><td>i</td><td>defined inline</td></tr>
+  <tr><td>c</td><td>defined in the class body or upon its first declaration</td></tr>
+  <tr><td>p</td><td>a pointer to function or pointer to member function</td></tr>
+</table>
+
+<h2>Results</h2>

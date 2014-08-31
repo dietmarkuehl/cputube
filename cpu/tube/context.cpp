@@ -36,10 +36,11 @@ cpu::tube::context::context(int, char*[],
                             char const* compiler, char const* flags)
     : d_compiler(compiler)
     , d_flags(flags)
-
-	// this will leave a the heap in a fragmented state
-	// with many small allocations (1b-64k) littered around at random
-    , fragment(1024*1024, 64*1024)
+      //-dk:TODO the fragmentation should probably be configurable
+      // this will leave a the heap in a fragmented state
+      // with many small allocations (1b-64k) littered around at random
+      // , d_fragment(1024*1024, 64*1024)
+    , d_fragment(1024, 64*1024)
 {
     std::cout << "processor=" << cpu::tube::processor() << ' '
               << "compiler=" << compiler << ' '
@@ -59,7 +60,7 @@ cpu::tube::context::do_report(char const*                     name,
                               cpu::tube::duration             duration,
                               std::vector<std::string> const& argv)
 {
-    std::cout << std::setw(0) << name << ','
+    std::cout << std::setw(0) << name << '|'
               << std::setw(0) << duration << ',';
     std::copy(argv.begin(), argv.end(),
               std::ostream_iterator<std::string>(std::cout, ","));

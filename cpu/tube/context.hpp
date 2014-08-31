@@ -51,9 +51,9 @@ namespace cpu
 class cpu::tube::context
 {
 private:
-    char const* d_compiler;
-    char const* d_flags;
-	heap_fragmenter fragment;
+    char const*     d_compiler;
+    char const*     d_flags;
+    heap_fragmenter d_fragment;
 	
     static void format(std::vector<std::string>&) {}
     template <typename H, typename... T>

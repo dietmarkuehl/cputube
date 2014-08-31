@@ -1,6 +1,6 @@
-// cpu/tube/heap_fragment.hpp                                         -*-C++-*-
+// cpu/test/ptr-function-calls-impl.cpp -*-C++-*-
 // ----------------------------------------------------------------------------
-//  Copyright (C) 2014 Thaddaeus Frogley         
+//  Copyright (C) 2014 Dietmar Kuehl http://www.dietmar-kuehl.de         
 //                                                                       
 //  Permission is hereby granted, free of charge, to any person          
 //  obtaining a copy of this software and associated documentation       
@@ -23,26 +23,12 @@
 //  OTHER DEALINGS IN THE SOFTWARE. 
 // ----------------------------------------------------------------------------
 
-#ifndef INCLUDED_CPU_TUBE_HEAP_FRAGMENT
-#define INCLUDED_CPU_TUBE_HEAP_FRAGMENT
-
-#include <vector>
+#include "ptr-function-calls.hpp"
 
 // ----------------------------------------------------------------------------
-// Creating this object leaves the heap in a fragmented state, with N allocations
-//  of 1...S bytes still allocated, remaining allocations are freed on destruction
-// the goal is to approximate the memory conditions of a live application
-// so cache coherency of heap allocated data structure access can be tested 
-// under closer to real world conditions
 
-class heap_fragmenter
-{
-public:
-    heap_fragmenter( int n, int s );
-    ~heap_fragmenter();
-	
-private:
-    std::vector<char*> allocated;
-};
-
-#endif // INCLUDED_CPU_TUBE_HEAP_FRAGMENT
+void pfc::X::ov(unsigned int i)  { this->x ^= i; }
+void pfc::X::onv(unsigned int i) { this->x ^= i; }
+void pfc::Y::ov(unsigned int i)  { this->x ^= i; }
+void pfc::S::os(pfc::S* s, unsigned int i) { s->x ^= i; }
+void pfc::onm(pfc::S* s, unsigned int i) { s->x ^= i; }

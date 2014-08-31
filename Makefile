@@ -23,7 +23,7 @@
 #   OTHER DEALINGS IN THE SOFTWARE. 
 #  ----------------------------------------------------------------------------
 
-NAME = write-ints
+NAME = ptr-function-calls
 
 TESTS = \
 	accumulate-int-array \
@@ -31,6 +31,8 @@ TESTS = \
 	search-integer \
 	search-short-string \
 	sequence-iteration \
+	write-ints  \
+	ptr-function-calls  \
 
 #  ----------------------------------------------------------------------------
 
@@ -81,6 +83,7 @@ ifeq ($(IS_INTEL),yes)
     CXXFLAGS += -std=c++11 $(OPTFLAGS)
 endif
 
+CC       = $(CXX)
 CPPFLAGS += -DCPUTUBE_COMPILER='"$(COMPILER)"' -DCPUTUBE_FLAGS='"$(OPTFLAGS)"'
 
 OPTEXT   = $(shell echo $(OPTFLAGS) | tr -d '-' | tr ' ' '-')
@@ -93,10 +96,18 @@ CXXFILES = \
 	cpu/tube/timer.cpp     \
 	cpu/tube/heap_fragment.cpp     \
 
-LIBFILES = $(CXXFILES:cpu/tube/%.cpp=$(OBJ)/cputube_%.o)
+LIBFILES  = $(CXXFILES:cpu/tube/%.cpp=$(OBJ)/cputube_%.o)
+TESTFILES = $(OBJ)/cputest_$(NAME).o
+ifeq ($(NAME),ptr-function-calls)
+TESTFILES = $(OBJ)/cputest_$(NAME).o $(OBJ)/cputest_$(NAME)-impl.o
+endif
 
 .PHONY: default
 default: check
+
+chart: $(OBJ)/cputube_chart
+	@mkdir -p charts
+	$(OBJ)/cputube_chart $(NAME) */cputest_$(NAME).result
 
 .PHONY: all
 all:
@@ -107,10 +118,10 @@ all:
 
 .PHONY: check
 check: $(OBJ)/cputest_$(NAME)
-	$(OBJ)/cputest_$(NAME) | tee $(HOME)/aaa/$(COMPILER).csv
+	$(OBJ)/cputest_$(NAME) | tee $(OBJ)/cputest_$(NAME).result
 
-$(OBJ)/cputest_$(NAME): $(OBJ)/libcputube.a $(OBJ)/cputest_$(NAME).o
-	$(CXX) -o $@ $(LDFLAGS) $(OBJ)/cputest_$(NAME).o -L$(OBJ) -lcputube
+$(OBJ)/cputest_$(NAME): $(OBJ)/libcputube.a $(TESTFILES)
+	$(CXX) -o $@ $(LDFLAGS) $(TESTFILES) -L$(OBJ) -lcputube
 
 $(OBJ)/libcputube.a: $(LIBFILES)
 	$(AR) $(ARFLAGS) $@ $(LIBFILES)
