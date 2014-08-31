@@ -108,7 +108,7 @@ int main(int ac, char* av[])
             for (std::string const& result: results) {
                 out << ", " << result;
             }
-            out << ']' << (&test == &order.back()? "": ",") << '\n';
+            out << "]" << (&test == &order.back()? "": ",") << '\n';
         }
         out << "]);\n";
 
@@ -125,7 +125,8 @@ int main(int ac, char* av[])
         out << "    </script>\n";
         out << "  </head>\n";
         out << "  <body>\n";
-        out << std::ifstream("cpu/test/" + name + ".html").rdbuf();
+        out << std::ifstream(("cpu/test/" + name + ".html").c_str()).rdbuf();
+        out.clear();
         out << "    <div id=\"chart_div\" style=\"width: 1400px; height: " << (50 * order.size()) << "px;\"></div>\n";
         out << "  </body>\n";
         out << "</html>\n";

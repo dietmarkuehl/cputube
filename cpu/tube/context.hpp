@@ -67,10 +67,20 @@ public:
     cpu::tube::timer start();
 
     void stub(char const* name);
+    void stub(std::string const& name) { this->stub(name.c_str()); }
     template <typename... T>
     void report(char const* name, cpu::tube::timer& timer, T&&... args);
     template <typename... T>
     void report(char const* name, cpu::tube::duration duration, T&&... args);
+
+    template <typename... T>
+    void report(std::string const& name, cpu::tube::timer& timer, T&&... args) {
+        this->report(name.c_str(), timer, std::forward<T>(args)...);
+    }
+    template <typename... T>
+    void report(std::string const& name, cpu::tube::duration duration, T&&... args) {
+        this->report(name.c_str(), duration, std::forward<T>(args)...);
+    }
 };
 
 // ----------------------------------------------------------------------------

@@ -300,7 +300,7 @@ namespace test
 {
     template <typename T>
     void measure(cpu::tube::context& context,
-                 char const* name, T (*function)(T*, int)) {
+                 std::string const& name, T (*function)(T*, int)) {
         T array1[1024];
         T array2[1024];
         for (long i(0); i != 1024; ++i) {
@@ -318,31 +318,31 @@ namespace test
 
 
     template <typename T>
-    void measure(cpu::tube::context& context)
+    void measure(cpu::tube::context& context, std::string const& type)
     {
-        test::measure(context, "accumulate", competitor::accumulate<T>);
-        test::measure(context, "range for", competitor::range_for<T>);
-        test::measure(context, "pre increment index", competitor::pre_increment_index<T>);
-        test::measure(context, "pre increment less index", competitor::pre_increment_less_index<T>);
-        test::measure(context, "post increment index", competitor::post_increment_index<T>);
-        test::measure(context, "post increment less index", competitor::post_increment_less_index<T>);
-        test::measure(context, "pre decrement index", competitor::pre_decrement_index<T>);
-        test::measure(context, "pre decrement less index", competitor::pre_decrement_less_index<T>);
-        test::measure(context, "post decrement index", competitor::post_decrement_index<T>);
-        test::measure(context, "post decrement less index", competitor::post_decrement_less_index<T>);
-        test::measure(context, "pre increment pointer", competitor::pre_increment_pointer<T>);
-        test::measure(context, "pre increment less pointer", competitor::pre_increment_less_pointer<T>);
-        test::measure(context, "post increment pointer", competitor::post_increment_pointer<T>);
-        test::measure(context, "post increment less pointer", competitor::post_increment_less_pointer<T>);
-        test::measure(context, "pre decrement pointer", competitor::pre_decrement_pointer<T>);
-        test::measure(context, "pre decrement less pointer", competitor::pre_decrement_less_pointer<T>);
-        test::measure(context, "post decrement pointer", competitor::post_decrement_pointer<T>);
-        test::measure(context, "post decrement less pointer", competitor::post_decrement_less_pointer<T>);
-        test::measure(context, "unrolled pointer", competitor::unrolled_pointer<T>);
-        test::measure(context, "unrolled index", competitor::unrolled_index<T>);
-        test::measure(context, "unrolled pointer2", competitor::unrolled_pointer2<T>);
-        test::measure(context, "unrolled index2", competitor::unrolled_index2<T>);
-        test::measure(context, "unrolled index3", competitor::unrolled_index3<T>);
+        test::measure(context, type + " accumulate", competitor::accumulate<T>);
+        test::measure(context, type + " range for", competitor::range_for<T>);
+        test::measure(context, type + " pre increment index", competitor::pre_increment_index<T>);
+        test::measure(context, type + " pre increment less index", competitor::pre_increment_less_index<T>);
+        test::measure(context, type + " post increment index", competitor::post_increment_index<T>);
+        test::measure(context, type + " post increment less index", competitor::post_increment_less_index<T>);
+        test::measure(context, type + " pre decrement index", competitor::pre_decrement_index<T>);
+        test::measure(context, type + " pre decrement less index", competitor::pre_decrement_less_index<T>);
+        test::measure(context, type + " post decrement index", competitor::post_decrement_index<T>);
+        test::measure(context, type + " post decrement less index", competitor::post_decrement_less_index<T>);
+        test::measure(context, type + " pre increment pointer", competitor::pre_increment_pointer<T>);
+        test::measure(context, type + " pre increment less pointer", competitor::pre_increment_less_pointer<T>);
+        test::measure(context, type + " post increment pointer", competitor::post_increment_pointer<T>);
+        test::measure(context, type + " post increment less pointer", competitor::post_increment_less_pointer<T>);
+        test::measure(context, type + " pre decrement pointer", competitor::pre_decrement_pointer<T>);
+        test::measure(context, type + " pre decrement less pointer", competitor::pre_decrement_less_pointer<T>);
+        test::measure(context, type + " post decrement pointer", competitor::post_decrement_pointer<T>);
+        test::measure(context, type + " post decrement less pointer", competitor::post_decrement_less_pointer<T>);
+        test::measure(context, type + " unrolled pointer", competitor::unrolled_pointer<T>);
+        test::measure(context, type + " unrolled index", competitor::unrolled_index<T>);
+        test::measure(context, type + " unrolled pointer2", competitor::unrolled_pointer2<T>);
+        test::measure(context, type + " unrolled index2", competitor::unrolled_index2<T>);
+        test::measure(context, type + " unrolled index3", competitor::unrolled_index3<T>);
     }
 }
 
@@ -351,10 +351,7 @@ namespace test
 int main(int ac, char* av[])
 {
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
-    std::cout << "unsigned int\n";
-    test::measure<unsigned int>(context);
-    std::cout << "float\n";
-    test::measure<float>(context);
-    std::cout << "double\n";
-    test::measure<double>(context);
+    test::measure<unsigned int>(context, "unsigned int");
+    test::measure<float>(context, "float");
+    test::measure<double>(context, "double");
 }

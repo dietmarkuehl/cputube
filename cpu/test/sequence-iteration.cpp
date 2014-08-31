@@ -126,7 +126,7 @@ namespace test
 #endif
 
     template <typename Cont>
-    void measure(cpu::tube::context& context, char const* name) {
+    void measure(cpu::tube::context& context, std::string const& name) {
         typename Cont::value_type array[511];
         for (int i(0); i != std::end(array) - std::begin(array); ++i) {
             array[i] = i;
@@ -189,34 +189,32 @@ namespace test
 namespace test
 {
     template <typename T>
-    void measure_type(cpu::tube::context& context, char const* type)
+    void measure_type(cpu::tube::context& context, std::string const& type)
     {
-        std::cout << type << '\n';
-
 #if !defined(__INTEL_COMPILER)
-        test::measure<std::array<T, 511> >(context, "std::array<T  511>");
+        test::measure<std::array<T, 511> >(context, "std::array<" + type + ", 511>");
 #else
-        context.stub("std::array<T  511>");
+        context.stub("std::array<" + type + ", 511>");
 #endif
-        test::measure<std::deque<T> >(context, "std::deque<T>");
+        test::measure<std::deque<T> >(context, "std::deque<" + type + ">");
 #if !defined(__INTEL_COMPILER)
-        test::measure<std::forward_list<T> >(context, "std::forward_list<T>");
+        test::measure<std::forward_list<T> >(context, "std::forward_list<" + type + ">");
 #else
-        context.stub("std::forward_list<T>");
+        context.stub("std::forward_list<" + type + ">");
 #endif
-        test::measure<std::list<T> >(context, "std::list<T>");
-        test::measure<std::set<T> >(context, "std::set<T>");
+        test::measure<std::list<T> >(context, "std::list<" + type + ">");
+        test::measure<std::set<T> >(context, "std::set<" + type + ">");
 #if !defined(__INTEL_COMPILER)
-        test::measure<std::unordered_set<T> >(context, "std::unordered_set<T>");
+        test::measure<std::unordered_set<T> >(context, "std::unordered_set<" + type + ">");
 #else
-        context.stub("std::unordered_set<T>");
+        context.stub("std::unordered_set<" + type + ">");
 #endif
-        test::measure<std::vector<T> >(context, "std::vector<T>");
-        test::measure<test::array<T, 511> >(context, "test::array<T  511>");
+        test::measure<std::vector<T> >(context, "std::vector<" + type + ">");
+        test::measure<test::array<T, 511> >(context, "test::array<" + type + ", 511>");
 #if !defined(__INTEL_COMPILER)
-        test::measure<btree::btree_set<T> >(context, "btree::btree_set<T>");
+        test::measure<btree::btree_set<T> >(context, "btree::btree_set<" + type + ">");
 #else
-        context.stub("btree::btree_set<T>");
+        context.stub("btree::btree_set<" + type + ">");
 #endif
     }
 }

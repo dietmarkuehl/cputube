@@ -51,7 +51,7 @@ cpu::tube::context::context(int, char*[],
 void
 cpu::tube::context::stub(char const* name)
 {
-    std::cout << std::setw(0) << name << ',';
+    std::cout << std::setw(0) << name << "| 0 , ";
     std::cout << '\n';
 }
 

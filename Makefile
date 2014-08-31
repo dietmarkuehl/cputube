@@ -43,7 +43,7 @@ AR       = ar
 ARFLAGS  = rcu
 
 LIBCXX   = /Users/kuehl/src/llvm/libcxx
-LIBSTDCXX = /opt/gcc-current/include/c++/4.9.0
+# LIBSTDCXX = /opt/gcc-current/include/c++/4.9.0
 
 ifeq ($(COMPILER),gcc)
     CXX      = $(GXX)
@@ -62,7 +62,7 @@ endif
 ifeq ($(COMPILER),clang)
     CXX      = $(CLANGXX)
     DEPFLAGS = -M
-    OPTFLAGS = -O4
+    OPTFLAGS = -O3
 
     CPPFLAGS += -std=c++11 -I$(LIBCXX)/include
     CXXFLAGS += -W -Wall -stdlib=libc++ $(OPTFLAGS)
@@ -76,7 +76,7 @@ ifeq ($(COMPILER),intel)
 endif
 ifeq ($(IS_INTEL),yes)
     # detect: __INTEL_COMPILER
-    CXX      = /usr/bin/icc
+    CXX      = icc
     DEPFLAGS = -M
     OPTFLAGS = -O3
     CPPFLAGS += -Icpu/icc-lib
@@ -104,6 +104,13 @@ endif
 
 .PHONY: default
 default: check
+
+.PHONY:
+charts:
+	for f in $(TESTS); \
+	do \
+		$(MAKE) chart NAME=$$f; \
+	done
 
 chart: $(OBJ)/cputube_chart
 	@mkdir -p charts
@@ -139,6 +146,9 @@ test: cpuid
 .PHONY: clean
 clean:
 	$(RM) -r $(OBJ)
+
+distclean:
+	$(RM) -r ./$(ARCH)-icc* ./$(ARCH)-gcc* ./$(ARCH)-clang*
 
 .PHONY: depend
 depend $(OBJ)/make.depend:

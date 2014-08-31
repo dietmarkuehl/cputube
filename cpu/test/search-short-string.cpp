@@ -173,13 +173,16 @@ namespace
             }
         }
 
-        context.report(name, timer, total, size);
+        auto time = timer.measure();
+
+        std::ostringstream out;
+        out << name << " [" << size << "]";
+        context.report(out.str(), time, total);
     }
 
     void run_tests(cpu::tube::context& context, int size,
                    std::vector<string_type> const& strings)
     {
-        std::cout << "size=" << size << '\n';
         int range(size + size / 2);
         std::vector<string_type> values;
         for (unsigned int usize(size); values.size() != usize; ) {
@@ -199,20 +202,30 @@ namespace
             measure(context, sought, "vector find()",              size, vector_find(values));
         }
         else {
-            context.stub("vector find()");
+            std::ostringstream out;
+            out << "vector find() [" << size << "]";
+            context.stub(out.str());
         }
         measure(context, sought, "vector lower_bound()",       size, vector_lower_bound(values));
         measure(context, sought, "set find()",                 size, set_find(values));
 #if !defined(__INTEL_COMPILER)
         measure(context, sought, "unordered set find()",       size, unordered_set_find(values));
 #else
-        context.stub("unordered set find()");
+        {
+            std::ostringstream out;
+            out << "unordered set find() [" << size << "]";
+            context.stub(out.str());
+        }
 #endif
         measure(context, sought, "boost unordered set find()", size, boost_unordered_set_find(values));
 #if !defined(__INTEL_COMPILER)
         measure(context, sought, "b-tree set find()",          size, btree_set_find(values));
 #else
-        context.stub("b-tree set find()");
+        {
+            std::ostringstream out;
+            out << "b-tree set find() [" << size << "]";
+            context.stub(out.str());
+        }
 #endif
     }
 
