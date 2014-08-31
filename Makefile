@@ -31,6 +31,7 @@ TESTS = \
 	search-integer \
 	search-short-string \
 	sequence-iteration \
+	write-characters  \
 	write-ints  \
 	ptr-function-calls  \
 
@@ -105,8 +106,11 @@ endif
 .PHONY: default
 default: check
 
-.PHONY:
-charts:
+.PHONY: charts
+charts: $(OBJ)/cputube_charts
+	@mkdir -p charts
+	$(OBJ)/cputube_charts $(TESTS);
+	cp charts/charts.html charts/index.html
 	for f in $(TESTS); \
 	do \
 		$(MAKE) chart NAME=$$f; \
@@ -146,9 +150,12 @@ test: cpuid
 .PHONY: clean
 clean:
 	$(RM) -r $(OBJ)
+	$(RM) mkerr olderr *~
 
 distclean:
 	$(RM) -r ./$(ARCH)-icc* ./$(ARCH)-gcc* ./$(ARCH)-clang*
+	$(RM) -r charts
+	$(RM) mkerr olderr *~
 
 .PHONY: depend
 depend $(OBJ)/make.depend:
