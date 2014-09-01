@@ -37,11 +37,16 @@ TESTS = \
 
 #  ----------------------------------------------------------------------------
 
-COMPILER = gcc
-GXX      = g++
-CLANGXX  = clang++
-AR       = ar
-ARFLAGS  = rcu
+COMPILER  = gcc
+GXX       = g++
+CLANGXX   = clang++
+AR        = ar
+ARFLAGS   = rcu
+# USE_CXX11 = yes
+
+ifeq ($(USE_CXX11),yes)
+    CPPFLAGS += -DUSE_CXX11
+endif
 
 LIBCXX   = /Users/kuehl/src/llvm/libcxx
 # LIBSTDCXX = /opt/gcc-current/include/c++/4.9.0
@@ -54,7 +59,11 @@ ifeq ($(COMPILER),gcc)
     LTOFLAGS = -flto
     OPTFLAGS = -O3 $(LTOFLAGS)
 
-    CPPFLAGS += -std=c++11
+    ifeq ($(USE_CXX11),yes)
+        CPPFLAGS += -std=c++11
+    else
+        CPPFLAGS += -ansi -pedantic
+    endif
     CPPLFAGS += -DIS_GCC
     CXXFLAGS += -W -Wall $(OPTFLAGS) $(LTOFLAGS)
     LDFLAGS  += $(LTOFLAGS)
@@ -92,9 +101,10 @@ ARCH     = $(shell uname -s)
 OBJ      = $(ARCH)-$(COMPILER)-$(OPTEXT)
 CPPFLAGS += -I.
 CXXFILES = \
+	cpu/tube/chrono.cpp    \
+	cpu/tube/timer.cpp     \
 	cpu/tube/context.cpp   \
 	cpu/tube/processor.cpp \
-	cpu/tube/timer.cpp     \
 	cpu/tube/heap_fragment.cpp     \
 
 LIBFILES  = $(CXXFILES:cpu/tube/%.cpp=$(OBJ)/cputube_%.o)

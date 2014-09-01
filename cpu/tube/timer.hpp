@@ -26,7 +26,7 @@
 #ifndef INCLUDED_CPU_TUBE_TIMER
 #define INCLUDED_CPU_TUBE_TIMER
 
-#include <chrono>
+#include "cpu/tube/chrono.hpp"
 #include <iosfwd>
 
 // ----------------------------------------------------------------------------
@@ -47,14 +47,14 @@ namespace cpu
 class cpu::tube::duration
 {
 private:
-    typedef std::chrono::high_resolution_clock clock;
+    typedef cpu::tube::chrono::high_resolution_clock clock;
     clock::time_point::duration d_duration;
 
 public:
     duration(cpu::tube::timer const& timer);
     duration(clock::time_point::duration value): d_duration(value) {}
     std::ostream& print(std::ostream& out) const;
-    unsigned long long microseconds() const;
+    unsigned long microseconds() const;
 };
 
 // ----------------------------------------------------------------------------
@@ -63,18 +63,14 @@ class cpu::tube::timer
 {
 private:
     friend class cpu::tube::duration;
-    typedef std::chrono::high_resolution_clock clock;
+    typedef cpu::tube::chrono::high_resolution_clock clock;
     clock::time_point d_start;
-
-    timer(timer const&) = delete;
-    void operator=(timer) = delete;
 
     clock::time_point::duration intern_measure() const {
         return clock::now() - this->d_start;
     }
 public:
     timer(): d_start(clock::now()) {}
-    timer(timer&& other): d_start(other.d_start) {}
 
     cpu::tube::duration measure() const {
         return this->intern_measure();

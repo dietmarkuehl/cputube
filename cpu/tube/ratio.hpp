@@ -1,6 +1,6 @@
-// cpu/tube/timer.cpp                                                 -*-C++-*-
+// cpu/tube/ratio.hpp -*-C++-*-
 // ----------------------------------------------------------------------------
-//  Copyright (C) 2013 Dietmar Kuehl http://www.dietmar-kuehl.de         
+//  Copyright (C) 2014 Dietmar Kuehl http://www.dietmar-kuehl.de         
 //                                                                       
 //  Permission is hereby granted, free of charge, to any person          
 //  obtaining a copy of this software and associated documentation       
@@ -22,33 +22,48 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR        
 //  OTHER DEALINGS IN THE SOFTWARE. 
 // ----------------------------------------------------------------------------
+// This is a replacement for <ratio> for non-C++11 compilers. If USE_CXX11 is
+// defined <ratio> is used. In either case, the necessary names are made
+// available in namespace cpu::tube.
 
-#include "cpu/tube/timer.hpp"
-#include <iostream>
+#ifndef INCLUDED_CPU_TUBE_RATIO
+#define INCLUDED_CPU_TUBE_RATIO
 
-// ----------------------------------------------------------------------------
-unsigned long cpu::tube::duration::microseconds() const
-{
-    using namespace cpu::tube::chrono;
-    return duration_cast<cpu::tube::chrono::microseconds>(this->d_duration).count();
-}
-
-std::ostream& cpu::tube::duration::print(std::ostream& out) const
-{
-    return out << this->microseconds();
-}
-
-std::ostream& cpu::tube::operator<< (std::ostream&              out,
-                                     cpu::tube::duration const& duration)
-{
-    return duration.print(out);
-}
+#ifdef USE_CXX11
 
 // ----------------------------------------------------------------------------
 
-std::ostream& cpu::tube::operator<< (std::ostream&           out,
-                                     cpu::tube::timer const& timer)
+#include <ratio>
+
+namespace cpu
 {
-    using namespace cpu::tube::chrono;
-    return out << timer.measure();
+    namespace tube
+    {
+        using std::ratio;
+        using std::milli;
+        using std::micro;
+    }
 }
+
+// ----------------------------------------------------------------------------
+
+#else // USE_CXX11
+
+// ----------------------------------------------------------------------------
+
+namespace cpu
+{
+    namespace tube
+    {
+        template <long, long = 1> class ratio;
+
+        typedef ratio<1, 1000>    milli;
+        typedef ratio<1, 1000000> micro;
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+#endif // USE_CXX11
+
+#endif

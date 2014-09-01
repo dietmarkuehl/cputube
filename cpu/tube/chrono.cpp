@@ -1,6 +1,6 @@
-// cpu/tube/timer.cpp                                                 -*-C++-*-
+// cpu/tube/chrono.cpp                                                -*-C++-*-
 // ----------------------------------------------------------------------------
-//  Copyright (C) 2013 Dietmar Kuehl http://www.dietmar-kuehl.de         
+//  Copyright (C) 2014 Dietmar Kuehl http://www.dietmar-kuehl.de         
 //                                                                       
 //  Permission is hereby granted, free of charge, to any person          
 //  obtaining a copy of this software and associated documentation       
@@ -23,32 +23,22 @@
 //  OTHER DEALINGS IN THE SOFTWARE. 
 // ----------------------------------------------------------------------------
 
-#include "cpu/tube/timer.hpp"
-#include <iostream>
+#include "cpu/tube/chrono.hpp"
+
+#ifndef  USE_CXX11
+
+#include <sys/time.h>
 
 // ----------------------------------------------------------------------------
-unsigned long cpu::tube::duration::microseconds() const
-{
-    using namespace cpu::tube::chrono;
-    return duration_cast<cpu::tube::chrono::microseconds>(this->d_duration).count();
-}
 
-std::ostream& cpu::tube::duration::print(std::ostream& out) const
+cpu::tube::chrono::high_resolution_clock::time_point
+cpu::tube::chrono::high_resolution_clock::now()
 {
-    return out << this->microseconds();
-}
-
-std::ostream& cpu::tube::operator<< (std::ostream&              out,
-                                     cpu::tube::duration const& duration)
-{
-    return duration.print(out);
+    timeval tv;
+    gettimeofday(&tv, 0);
+    return time_point(long(tv.tv_sec) * 1000000l + long(tv.tv_usec));
 }
 
 // ----------------------------------------------------------------------------
 
-std::ostream& cpu::tube::operator<< (std::ostream&           out,
-                                     cpu::tube::timer const& timer)
-{
-    using namespace cpu::tube::chrono;
-    return out << timer.measure();
-}
+#endif // USE_CXX11
