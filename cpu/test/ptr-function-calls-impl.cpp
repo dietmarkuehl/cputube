@@ -27,8 +27,8 @@
 
 // ----------------------------------------------------------------------------
 
-void pfc::X::ov(unsigned int i)  { this->x ^= i; }
-void pfc::X::onv(unsigned int i) { this->x ^= i; }
-void pfc::Y::ov(unsigned int i)  { this->x ^= i; }
-void pfc::S::os(pfc::S* s, unsigned int i) { s->x ^= i; }
-void pfc::onm(pfc::S* s, unsigned int i) { s->x ^= i; }
+void pfc::X::ov(unsigned long i)  { this->x ^= i; }
+void pfc::X::onv(unsigned long i) { this->x ^= i; }
+void pfc::Y::ov(unsigned long i)  { this->x ^= i; }
+void pfc::S::os(pfc::S* s, unsigned long i) { s->x ^= i; }
+void pfc::onm(pfc::S* s, unsigned long i) { s->x ^= i; }

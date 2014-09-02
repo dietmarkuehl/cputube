@@ -55,9 +55,8 @@ private:
     char const*     d_flags;
     heap_fragmenter d_fragment;
 	
-    static void format(std::vector<std::string>&) {}
-    template <typename H, typename... T>
-    static void format(std::vector<std::string>& argv, H&& value, T&&... tail);
+    template <typename T>
+    static void format(std::vector<std::string>& argv, T const& value);
 
     void do_report(char const* name, cpu::tube::duration duration,
                    std::vector<std::string> const& argv);
@@ -68,32 +67,32 @@ public:
 
     void stub(char const* name);
     void stub(std::string const& name) { this->stub(name.c_str()); }
-    template <typename... T>
-    void report(char const* name, cpu::tube::timer& timer, T&&... args);
-    template <typename... T>
-    void report(char const* name, cpu::tube::duration duration, T&&... args);
+    void report(char const* name, cpu::tube::timer& timer);
+    template <typename T>
+    void report(char const* name, cpu::tube::timer& timer, T const& arg);
+    void report(char const* name, cpu::tube::duration duration);
+    template <typename T>
+    void report(char const* name, cpu::tube::duration duration, T const& arg);
 
-    template <typename... T>
-    void report(std::string const& name, cpu::tube::timer& timer, T&&... args) {
-        this->report(name.c_str(), timer, std::forward<T>(args)...);
+    template <typename T>
+    void report(std::string const& name, cpu::tube::timer& timer, T const& arg) {
+        this->report(name.c_str(), timer, arg);
     }
-    template <typename... T>
-    void report(std::string const& name, cpu::tube::duration duration, T&&... args) {
-        this->report(name.c_str(), duration, std::forward<T>(args)...);
+    template <typename T>
+    void report(std::string const& name, cpu::tube::duration duration, T const& arg) {
+        this->report(name.c_str(), duration, arg);
     }
 };
 
 // ----------------------------------------------------------------------------
 
-template <typename H, typename... T>
+template <typename T>
 void
-cpu::tube::context::format(std::vector<std::string>& argv,
-                           H&& value, T&&... tail)
+cpu::tube::context::format(std::vector<std::string>& argv, T const& value)
 {
     std::ostringstream out;
     out << value;
     argv.push_back(out.str());
-    format(argv, std::forward<T>(tail)...);
 }
 
 inline cpu::tube::timer
@@ -102,23 +101,36 @@ cpu::tube::context::start()
     return cpu::tube::timer();
 }
 
-template <typename... T>
+inline void
+cpu::tube::context::report(char const* name, cpu::tube::timer& timer)
+{
+    this->report(name, timer.measure());
+}
+
+template <typename T>
 void
 cpu::tube::context::report(char const*       name,
                            cpu::tube::timer& timer,
-                           T&&...            args)
+                           T const&          arg)
 {
-    this->report(name, timer.measure(), std::forward<T>(args)...);
+    this->report(name, timer.measure(), arg);
 }
 
-template <typename... T>
+inline void
+cpu::tube::context::report(char const* name, cpu::tube::duration duration)
+{
+    std::vector<std::string> argv;
+    this->do_report(name, duration, argv);
+}
+
+template <typename T>
 void
 cpu::tube::context::report(char const*         name,
                            cpu::tube::duration duration,
-                           T&&...              args)
+                           T const&            arg)
 {
     std::vector<std::string> argv;
-    cpu::tube::context::format(argv, std::forward<T>(args)...);
+    cpu::tube::context::format(argv, arg);
     this->do_report(name, duration, argv);
 }
 

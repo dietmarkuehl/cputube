@@ -53,7 +53,7 @@ int main(int ac, char* av[])
         std::streamsize const max(std::numeric_limits<std::streamsize>::max());
         std::vector<std::string>                        order;
         std::vector<std::string>                        system;
-        std::map<std::string, std::vector<std::string>> values;
+        std::map<std::string, std::vector<std::string> > values;
 
         if (ac < 2) {
             throw std::runtime_error("usage: " + std::string(av[0]) + " <name> [<results>*]");
@@ -74,7 +74,7 @@ int main(int ac, char* av[])
             }
             for (std::string test, result;
                  std::getline(std::getline(in, test, '|'), result, ',').ignore(max, '\n'); ) {
-                std::map<std::string, std::vector<std::string>>::iterator it(values.find(test));
+                std::map<std::string, std::vector<std::string> >::iterator it(values.find(test));
                 if (it == values.end()) {
                     order.push_back(test);
                     it = values.insert(std::make_pair(test, std::vector<std::string>())).first;
@@ -97,18 +97,21 @@ int main(int ac, char* av[])
         out << "        var data = google.visualization.arrayToDataTable([\n";
 
         out << "[ 'Test'";
-        for (std::string const& head: system) {
-            out << ", '" << head << "'";
+        for (std::vector<std::string>::const_iterator it(system.begin()), end(system.end());
+             it != end; ++it) {
+            out << ", '" << *it << "'";
         }
         out << "],\n";
-        for (std::string const& test: order) {
-            out << "['" << test << "'";
-            std::vector<std::string>& results(values[test]);
+        for (std::vector<std::string>::const_iterator it(order.begin()), end(order.end());
+             it != end; ++it) {
+            out << "['" << *it << "'";
+            std::vector<std::string>& results(values[*it]);
             results.resize(system.size());
-            for (std::string const& result: results) {
-                out << ", " << result;
+            for (std::vector<std::string>::const_iterator rit(results.begin()), rend(results.end());
+                 rit != rend; ++rit) {
+                 out << ", " << *rit;
             }
-            out << "]" << (&test == &order.back()? "": ",") << '\n';
+            out << "]" << (&*it == &order.back()? "": ",") << '\n';
         }
         out << "]);\n";
 

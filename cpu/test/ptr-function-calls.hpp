@@ -41,22 +41,22 @@ namespace pfc
     class X
     {
     protected:
-        unsigned int x;
+        unsigned long x;
     public:
         X(): x() {}
         virtual ~X() {}
-        virtual unsigned int  result() const { return x; }
+        virtual unsigned long  result() const { return x; }
         
-        virtual void        v(unsigned int i);
-        void                nv(unsigned int i);
-        virtual void        ov(unsigned int i);
-        void                onv(unsigned int i);
-        virtual void        iv(unsigned int i);
-        void                inv(unsigned int i);
-        virtual void        cv(unsigned int i) { this->x ^= i; }
-        void                cnv(unsigned int i) { this->x ^= i; }
-        inline virtual void civ(unsigned int i) { this->x ^= i; }
-        inline void         cinv(unsigned int i) { this->x ^= i; }
+        virtual void        v(unsigned long i);
+        void                nv(unsigned long i);
+        virtual void        ov(unsigned long i);
+        void                onv(unsigned long i);
+        virtual void        iv(unsigned long i);
+        void                inv(unsigned long i);
+        virtual void        cv(unsigned long i) { this->x ^= i; }
+        void                cnv(unsigned long i) { this->x ^= i; }
+        inline virtual void civ(unsigned long i) { this->x ^= i; }
+        inline void         cinv(unsigned long i) { this->x ^= i; }
     };
 
     class Y: public X
@@ -64,38 +64,38 @@ namespace pfc
     public:
         Y(): X() {}
 
-        virtual void        v(unsigned int i);
-        virtual void        ov(unsigned int i);
-        virtual void        iv(unsigned int i);
-        virtual void        cv(unsigned int i)  { this->x ^= i; }
-        inline virtual void civ(unsigned int i) { this->x ^= i; }
+        virtual void        v(unsigned long i);
+        virtual void        ov(unsigned long i);
+        virtual void        iv(unsigned long i);
+        virtual void        cv(unsigned long i)  { this->x ^= i; }
+        inline virtual void civ(unsigned long i) { this->x ^= i; }
     };
 
     struct S
     {
-        unsigned int x;
+        unsigned long x;
         S(): x() {}
 
-        static        void s(S* s, unsigned int i);
-        static        void os(S* s, unsigned int i);
-        static        void is(S* s, unsigned int i);
-        static        void cs(S* s, unsigned int i)  { s->x ^= i; }
-        static inline void cis(S* s, unsigned int i) { s->x ^= i; }
+        static        void s(S* s, unsigned long i);
+        static        void os(S* s, unsigned long i);
+        static        void is(S* s, unsigned long i);
+        static        void cs(S* s, unsigned long i)  { s->x ^= i; }
+        static inline void cis(S* s, unsigned long i) { s->x ^= i; }
     };
 
-           void nm(S* s, unsigned int i);
-           void onm(S* s, unsigned int i);
-           void inm(S* s, unsigned int i);
-    inline void cinm(S* s, unsigned int i) { s->x ^= i; }
+           void nm(S* s, unsigned long i);
+           void onm(S* s, unsigned long i);
+           void inm(S* s, unsigned long i);
+    inline void cinm(S* s, unsigned long i) { s->x ^= i; }
 }
 
 // ----------------------------------------------------------------------------
 
-inline void pfc::X::iv(unsigned int i)  { this->x ^= i; }
-inline void pfc::X::inv(unsigned int i) { this->x ^= i; }
-inline void pfc::Y::iv(unsigned int i)  { this->x ^= i; }
-inline void pfc::S::is(pfc::S* s, unsigned int i) { s->x ^= i; }
-inline void pfc::inm(pfc::S* s, unsigned int i) { s->x ^= i; }
+inline void pfc::X::iv(unsigned long i)  { this->x ^= i; }
+inline void pfc::X::inv(unsigned long i) { this->x ^= i; }
+inline void pfc::Y::iv(unsigned long i)  { this->x ^= i; }
+inline void pfc::S::is(pfc::S* s, unsigned long i) { s->x ^= i; }
+inline void pfc::inm(pfc::S* s, unsigned long i) { s->x ^= i; }
 
 // ----------------------------------------------------------------------------
 
