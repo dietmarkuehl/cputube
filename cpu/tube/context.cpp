@@ -33,7 +33,9 @@
 // ----------------------------------------------------------------------------
 
 cpu::tube::context::context(int, char*[],
-                            char const* compiler, char const* flags)
+                            char const* arch,
+                            char const* compiler,
+                            char const* flags)
     : d_compiler(compiler)
     , d_flags(flags)
       //-dk:TODO the fragmentation should probably be configurable
@@ -42,7 +44,8 @@ cpu::tube::context::context(int, char*[],
       // , d_fragment(1024*1024, 64*1024)
     , d_fragment(1024, 64*1024)
 {
-    std::cout << "processor=" << cpu::tube::processor() << ' '
+    std::cout << "arch=" << arch << ' '
+              << "processor=" << cpu::tube::processor() << ' '
               << "compiler=" << compiler << ' '
               << "flags=" << flags << ' '
               << '\n';

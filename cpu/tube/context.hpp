@@ -34,7 +34,7 @@
 #include <utility>
 #include <vector>
 
-#define CPUTUBE_CONTEXT_ARGS(ac, av) ac, av, CPUTUBE_COMPILER, CPUTUBE_FLAGS
+#define CPUTUBE_CONTEXT_ARGS(ac, av) ac, av, CPUTUBE_ARCH, CPUTUBE_COMPILER, CPUTUBE_FLAGS
 
 // ----------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ private:
     void do_report(char const* name, cpu::tube::duration duration,
                    std::vector<std::string> const& argv);
 public:
-    context(int ac, char* av[], char const* compiler, char const* flags);
+    context(int ac, char* av[], char const* arch, char const* compiler, char const* flags);
 
     cpu::tube::timer start();
 

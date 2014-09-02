@@ -54,10 +54,10 @@ LIBCXX   = /Users/kuehl/src/llvm/libcxx
 ifeq ($(COMPILER),gcc)
     CXX      = $(GXX)
     DEPFLAGS = -M
-    xCXXFLAGS += -O3
     xOPTFLAGS = -g -finline-functions
     LTOFLAGS = -flto
-    OPTFLAGS = -O3 $(LTOFLAGS)
+    LOPTFLAGS = -O3
+    xLOPTFLAGS += -fno-tree-vectorize
 
     ifeq ($(USE_CXX11),yes)
         CPPFLAGS += -std=c++11
@@ -65,18 +65,22 @@ ifeq ($(COMPILER),gcc)
         CPPFLAGS += -ansi -pedantic
     endif
     CPPLFAGS += -DIS_GCC
-    CXXFLAGS += -W -Wall $(OPTFLAGS) $(LTOFLAGS)
+    CXXFLAGS += -W -Wall
     LDFLAGS  += $(LTOFLAGS)
-    xCXXFLAGS += -fno-tree-vectorize
 endif
 ifeq ($(COMPILER),clang)
     CXX      = $(CLANGXX)
     DEPFLAGS = -M
-    OPTFLAGS = -O3
+    LTOFLAGS = -flto
+    LOPTFLAGS = -O3
 
-    CPPFLAGS += -std=c++11 -I$(LIBCXX)/include
-    CXXFLAGS += -W -Wall -stdlib=libc++ $(OPTFLAGS)
-    LDFLAGS  = -stdlib=libc++ -L$(LIBCXX)/lib
+    ifeq ($(USE_CXX11),yes)
+        CPPFLAGS += -std=c++11
+    endif
+    CPPFLAGS += -I$(LIBCXX)/include
+    xCXXLIB = -std=libc++
+    CXXFLAGS += -W -Wall $(CXXLIB) $(OPTFLAGS)
+    LDFLAGS  = $(CXXLIB) -L$(LIBCXX)/lib
 endif
 ifeq ($(COMPILER),icc)
     IS_INTEL=yes
@@ -88,17 +92,23 @@ ifeq ($(IS_INTEL),yes)
     # detect: __INTEL_COMPILER
     CXX      = icc
     DEPFLAGS = -M
-    OPTFLAGS = -O3
-    CPPFLAGS += -Icpu/icc-lib
-    CXXFLAGS += -std=c++11 $(OPTFLAGS)
+    LOPTFLAGS = -O3
+    ifeq ($(USE_CXX11),yes)
+        CPPFLAGS += -Icpu/icc-lib
+        CXXFLAGS += -std=c++11
+    endif
+    CXXFLAGS += $(OPTFLAGS)
 endif
-
-CC       = $(CXX)
-CPPFLAGS += -DCPUTUBE_COMPILER='"$(COMPILER)"' -DCPUTUBE_FLAGS='"$(OPTFLAGS)"'
 
 OPTEXT   = $(shell echo $(OPTFLAGS) | tr -d '-' | tr ' ' '-')
 ARCH     = $(shell uname -s)
 OBJ      = $(ARCH)-$(COMPILER)-$(OPTEXT)
+CC       = $(CXX)
+OPTFLAGS = $(LOPTFLAGS) $(LTOFLAGS)
+CPPFLAGS += -DCPUTUBE_ARCH='"$(ARCH)"' \
+            -DCPUTUBE_COMPILER='"$(COMPILER)"' \
+            -DCPUTUBE_FLAGS='"$(OPTFLAGS)"'
+
 CPPFLAGS += -I.
 CXXFILES = \
 	cpu/tube/chrono.cpp    \
@@ -141,6 +151,10 @@ all:
 check: $(OBJ)/cputest_$(NAME)
 	$(OBJ)/cputest_$(NAME) | tee $(OBJ)/cputest_$(NAME).result
 
+.PHONY: $(OBJ)
+$(OBJ):
+	mkdir $(OBJ)
+
 $(OBJ)/cputest_$(NAME): $(OBJ)/libcputube.a $(TESTFILES)
 	$(CXX) -o $@ $(LDFLAGS) $(TESTFILES) -L$(OBJ) -lcputube
 
@@ -149,11 +163,11 @@ $(OBJ)/libcputube.a: $(LIBFILES)
 
 $(OBJ)/cputube_%.o: cpu/tube/%.cpp
 	@if [ ! -d $(OBJ) ]; then mkdir $(OBJ); fi
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(@:$(OBJ)/cputube_%.o=cpu/tube/%.cpp)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LOPTFLAGS) -c -o $@ $(@:$(OBJ)/cputube_%.o=cpu/tube/%.cpp)
 
 $(OBJ)/cputest_%.o: cpu/test/%.cpp
 	@if [ ! -d $(OBJ) ]; then mkdir $(OBJ); fi
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(@:$(OBJ)/cputest_%.o=cpu/test/%.cpp)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(OPTFLAGS) -c -o $@ $(@:$(OBJ)/cputest_%.o=cpu/test/%.cpp)
 
 test: cpuid
 

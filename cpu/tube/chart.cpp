@@ -67,6 +67,7 @@ int main(int ac, char* av[])
             }
             std::string tmp;
             if (std::getline(in, tmp)) {
+                erase(tmp, "arch=");
                 erase(tmp, "processor=");
                 erase(tmp, "compiler=");
                 erase(tmp, "flags=");
@@ -130,7 +131,8 @@ int main(int ac, char* av[])
         out << "  <body>\n";
         out << std::ifstream(("cpu/test/" + name + ".html").c_str()).rdbuf();
         out.clear();
-        out << "    <div id=\"chart_div\" style=\"width: 1400px; height: " << (50 * order.size()) << "px;\"></div>\n";
+        out << "    <div id=\"chart_div\" style=\"width: 1400px; height: "
+            << (12 * system.size() * order.size()) << "px;\"></div>\n";
         out << "  </body>\n";
         out << "</html>\n";
     }
