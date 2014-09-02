@@ -24,6 +24,7 @@
 #  ----------------------------------------------------------------------------
 
 NAME = ptr-function-calls
+NAME = functions
 
 TESTS = \
 	accumulate-int-array \
@@ -184,7 +185,7 @@ distclean:
 .PHONY: depend
 depend $(OBJ)/make.depend:
 	@if [ ! -d $(OBJ) ]; then mkdir $(OBJ); fi
-	$(CXX) $(CPPFLAGS) $(DEPFLAGS) $(CXXFILES) | \
+	$(CXX) $(CPPFLAGS) $(DEPFLAGS) $(CXXFILES) cpu/test/$(NAME).cpp | \
 	    scripts/fixdepend  $(OBJ) > $(OBJ)/make.depend
 
 include $(OBJ)/make.depend

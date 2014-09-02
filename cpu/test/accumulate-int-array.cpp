@@ -57,6 +57,7 @@ namespace competitor
         return r.d_end;
     }
     
+#ifdef USE_CXX11
     template <typename T>
     T range_for(T* array, int size) {
         T result(0);
@@ -65,6 +66,7 @@ namespace competitor
         }
         return result;
     }
+#endif
 
     template <typename T>
     T pre_increment_index(T* array, int size) {
@@ -308,7 +310,7 @@ namespace test
             array2[1023 - i] = i;
         }
         long total(0);
-        auto timer = context.start();
+        cpu::tube::timer timer = context.start();
         for (T i(0); i != 1000000; ++i) {
             total += function(array1, 1024);
             total += function(array2, 1024);
@@ -321,7 +323,9 @@ namespace test
     void measure(cpu::tube::context& context, std::string const& type)
     {
         test::measure(context, type + " accumulate", competitor::accumulate<T>);
+#if USE_CXX11
         test::measure(context, type + " range for", competitor::range_for<T>);
+#endif
         test::measure(context, type + " pre increment index", competitor::pre_increment_index<T>);
         test::measure(context, type + " pre increment less index", competitor::pre_increment_less_index<T>);
         test::measure(context, type + " post increment index", competitor::post_increment_index<T>);

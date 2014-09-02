@@ -80,7 +80,7 @@ int main(int ac, char* av[])
                     order.push_back(test);
                     it = values.insert(std::make_pair(test, std::vector<std::string>())).first;
                 }
-                it->second.resize(system.size() - 1u);
+                it->second.resize(system.size() - 1u, "0");
                 it->second.push_back(result);
             }
         }
@@ -107,7 +107,7 @@ int main(int ac, char* av[])
              it != end; ++it) {
             out << "['" << *it << "'";
             std::vector<std::string>& results(values[*it]);
-            results.resize(system.size());
+            results.resize(system.size(), "0");
             for (std::vector<std::string>::const_iterator rit(results.begin()), rend(results.end());
                  rit != rend; ++rit) {
                  out << ", " << *rit;
@@ -132,7 +132,7 @@ int main(int ac, char* av[])
         out << std::ifstream(("cpu/test/" + name + ".html").c_str()).rdbuf();
         out.clear();
         out << "    <div id=\"chart_div\" style=\"width: 1400px; height: "
-            << (12 * system.size() * order.size()) << "px;\"></div>\n";
+            << (13 * (1 + system.size()) * order.size()) << "px;\"></div>\n";
         out << "  </body>\n";
         out << "</html>\n";
     }
