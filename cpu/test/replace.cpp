@@ -63,10 +63,30 @@ namespace
 
 namespace
 {
-    struct use_remove_if_str_binary_search
+    struct use_remove_if_find
     {
         std::string allowed;
-        use_remove_if_str_binary_search(std::string const& allowed)
+        use_remove_if_find(std::string const& allowed)
+            : allowed(allowed) {
+            std::sort(this->allowed.begin(), this->allowed.end());
+        }
+        void operator()(std::string& text) const {
+            text.erase(std::remove_if(text.begin(), text.end(), [&](char c) {
+                        return std::find(allowed.begin(), allowed.end(), c) == allowed.end();
+                    }),
+                text.end());
+        }
+    };
+}
+
+// ----------------------------------------------------------------------------
+
+namespace
+{
+    struct use_remove_if_binary_search
+    {
+        std::string allowed;
+        use_remove_if_binary_search(std::string const& allowed)
             : allowed(allowed) {
             std::sort(this->allowed.begin(), this->allowed.end());
         }
@@ -110,7 +130,7 @@ namespace
         }
         void operator()(std::string& text) const {
             text.erase(std::remove_if(text.begin(), text.end(), [&](unsigned char c) {
-                        return std::isalnum(c) || c == '_' || c == '-';
+                        return !(std::isalnum(c) || c == '_' || c == '-');
                     }),
                 text.end());
         }
@@ -162,12 +182,13 @@ int main(int ac, char* av[])
     std::ifstream in("cpu/test/input.txt");
     std::string text((std::istreambuf_iterator<char>(in)),
                       std::istreambuf_iterator<char>());
-    std::string allowed("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    std::string allowed("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-");
 
     test::measure(context, "regex (build)",    text, use_regex_build(allowed));
     test::measure(context, "regex (prebuild)", text, use_regex_prebuild(allowed));
     test::measure(context, "use_remove_if_str_find", text, use_remove_if_str_find(allowed));
-    test::measure(context, "use_remove_if_str_binary_search", text, use_remove_if_str_binary_search(allowed));
+    test::measure(context, "use_remove_if_find", text, use_remove_if_find(allowed));
+    test::measure(context, "use_remove_if_binary_search", text, use_remove_if_binary_search(allowed));
     test::measure(context, "use_remove_if_ctype", text, use_remove_if_ctype(allowed));
     test::measure(context, "use_remove_if_hash", text, use_remove_if_hash(allowed));
     test::measure(context, "use_remove_if_table", text, use_remove_if_table(allowed));
