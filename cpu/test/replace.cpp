@@ -6,6 +6,7 @@
 #include <regex>
 #include <string>
 #include <unordered_set>
+#include <cctype>
 
 // ----------------------------------------------------------------------------
 
@@ -98,6 +99,25 @@ namespace
 
 // ----------------------------------------------------------------------------
 
+namespace
+{
+    struct use_remove_if_ctype
+    {
+        std::unordered_set<char> allowed;
+        use_remove_if_ctype(std::string const& allowed)
+            : allowed(allowed.begin(), allowed.end()) {
+        }
+        void operator()(std::string& text) const {
+            text.erase(std::remove_if(text.begin(), text.end(), [&](unsigned char c) {
+                        return std::isalnum(c) || c == '_' || c == '-';
+                    }),
+                text.end());
+        }
+    };
+}
+
+// ----------------------------------------------------------------------------
+
 namespace test
 {
     template <typename Replace>
@@ -124,6 +144,7 @@ int main(int ac, char* av[])
     test::measure(context, "regex (build)",    text, use_regex_build(allowed));
     test::measure(context, "regex (prebuild)", text, use_regex_prebuild(allowed));
     test::measure(context, "use_remove_if_str_find", text, use_remove_if_str_find(allowed));
-    test::measure(context, "use_remove_if_hash", text, use_remove_if_hash(allowed));
     test::measure(context, "use_remove_if_str_binary_search", text, use_remove_if_str_binary_search(allowed));
+    test::measure(context, "use_remove_if_ctype", text, use_remove_if_ctype(allowed));
+    test::measure(context, "use_remove_if_hash", text, use_remove_if_hash(allowed));
 }
