@@ -25,6 +25,7 @@
 
 NAME = ptr-function-calls
 NAME = functions
+NAME = replace
 
 TESTS = \
 	accumulate-int-array \
@@ -43,7 +44,7 @@ GXX       = g++
 CLANGXX   = clang++
 AR        = ar
 ARFLAGS   = rcu
-# USE_CXX11 = yes
+USE_CXX11 = yes
 
 ifeq ($(USE_CXX11),yes)
     CPPFLAGS += -DUSE_CXX11
