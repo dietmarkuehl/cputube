@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_set>
 #include <cctype>
+#include <vector>
 
 // ----------------------------------------------------------------------------
 
@@ -118,6 +119,28 @@ namespace
 
 // ----------------------------------------------------------------------------
 
+namespace
+{
+    struct use_remove_if_table
+    {
+        std::vector<char> filter;
+        use_remove_if_table(std::string const& allowed)
+            : filter(std::numeric_limits<unsigned char>::max(), 1) {
+            for (unsigned char c: allowed) {
+                filter[c] = 0;
+            }
+        }
+        void operator()(std::string& text) const {
+            text.erase(std::remove_if(text.begin(), text.end(), [&](unsigned char c) {
+                        return filter[c];
+                    }),
+                text.end());
+        }
+    };
+}
+
+// ----------------------------------------------------------------------------
+
 namespace test
 {
     template <typename Replace>
@@ -147,4 +170,5 @@ int main(int ac, char* av[])
     test::measure(context, "use_remove_if_str_binary_search", text, use_remove_if_str_binary_search(allowed));
     test::measure(context, "use_remove_if_ctype", text, use_remove_if_ctype(allowed));
     test::measure(context, "use_remove_if_hash", text, use_remove_if_hash(allowed));
+    test::measure(context, "use_remove_if_table", text, use_remove_if_table(allowed));
 }
