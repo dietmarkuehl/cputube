@@ -124,10 +124,7 @@ namespace
 {
     struct use_remove_if_ctype
     {
-        std::unordered_set<char> allowed;
-        use_remove_if_ctype(std::string const& allowed)
-            : allowed(allowed.begin(), allowed.end()) {
-        }
+        use_remove_if_ctype(std::string const&) {}
         void operator()(std::string& text) const {
             text.erase(std::remove_if(text.begin(), text.end(), [&](unsigned char c) {
                         return !(std::isalnum(c) || c == '_' || c == '-');

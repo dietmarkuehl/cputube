@@ -26,6 +26,7 @@
 NAME = ptr-function-calls
 NAME = functions
 NAME = replace
+NAME = get-digits
 
 TESTS = \
 	accumulate-int-array \
@@ -57,7 +58,7 @@ ifeq ($(COMPILER),gcc)
     CXX      = $(GXX)
     DEPFLAGS = -M
     xOPTFLAGS = -g -finline-functions
-    LTOFLAGS = -flto
+    xLTOFLAGS = -flto
     LOPTFLAGS = -O3
     xLOPTFLAGS += -fno-tree-vectorize
 
@@ -73,7 +74,7 @@ endif
 ifeq ($(COMPILER),clang)
     CXX      = $(CLANGXX)
     DEPFLAGS = -M
-    LTOFLAGS = -flto
+    xLTOFLAGS = -flto
     LOPTFLAGS = -O3
 
     ifeq ($(USE_CXX11),yes)
@@ -96,8 +97,8 @@ ifeq ($(IS_INTEL),yes)
     DEPFLAGS = -M
     LOPTFLAGS = -O3
     ifeq ($(USE_CXX11),yes)
-        CPPFLAGS += -Icpu/icc-lib
-        CXXFLAGS += -std=c++11
+        xCPPFLAGS += -Icpu/icc-lib
+        CXXFLAGS += -DINTEL -std=c++11
     endif
     CXXFLAGS += $(OPTFLAGS)
 endif
