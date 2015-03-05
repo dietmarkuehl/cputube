@@ -34,6 +34,10 @@
 #include <utility>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#include <bsl_memory.h>
+#include <bslma_managedptr.h>
+
+using namespace BloombergLP;
 
 // ----------------------------------------------------------------------------
 
@@ -93,6 +97,67 @@ namespace cputube
     template <typename T, typename... Args>
     rc_ptr<T> make_rc(Args&&... args) {
         return rc_ptr<T>(std::forward<Args>(args)...);
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+namespace cputube
+{
+    template <typename T>
+    class mv_ptr
+    {
+        struct rep {
+            T value;
+            int count;
+            template <typename... Args>
+            explicit rep(Args&&... args)
+                : value(std::forward<Args>(args)...)
+                , count(1)
+            {
+            }
+            rep(rep const&) = delete;
+            void operator=(rep const&) = delete;
+            ~rep() {
+            }
+        };
+        rep* rep_;
+    public:
+        template <typename... Args>
+        explicit mv_ptr(Args&&... args)
+            : rep_(new rep(std::forward<Args>(args)...)) {
+        }
+        mv_ptr(mv_ptr& other)
+            : rep_(other.rep_) {
+            this->rep_ && ++this->rep_->count;
+        }
+        mv_ptr(mv_ptr const& other)
+            : rep_(other.rep_) {
+            this->rep_ && ++this->rep_->count;
+        }
+        mv_ptr(mv_ptr&& other) 
+            : rep_(other.rep_) {
+            other.rep_ = 0;
+        }
+        mv_ptr& operator=(mv_ptr other) {
+            other.swap(*this);
+        }
+        ~mv_ptr() {
+            if (this->rep_ && --this->rep_->count == 0) {
+                delete this->rep_;
+            }
+        }
+        void swap(mv_ptr& other) {
+            std::swap(this->rep_, other.rep_);
+        }
+
+        T& operator*() const { return this->rep_->value; }
+        T* operator->() const { return &this->rep_->value; }
+    };
+    
+    template <typename T, typename... Args>
+    mv_ptr<T> make_mv(Args&&... args) {
+        return mv_ptr<T>(std::forward<Args>(args)...);
     }
 }
 
@@ -165,6 +230,44 @@ namespace
         void kill(type const&) const {
         }
     };
+
+    template <typename T>
+    struct mv_ptr
+    {
+        using type = cputube::mv_ptr<T>;
+        template <typename... Args>
+        type make(Args&&... args) const {
+            return cputube::make_mv<T>(std::forward<Args>(args)...);
+        }
+        void kill(type const&) const {
+        }
+    };
+
+    template <typename T>
+    struct bsl_shared_ptr
+    {
+        using type = bsl::shared_ptr<T>;
+        template <typename... Args>
+        type make(Args&&... args) const {
+            //return bsl::make_shared<T>(std::forward<Args>(args)...);
+            return bsl::make_shared<T>(args...);
+        }
+        void kill(type const&) const {
+        }
+    };
+
+    template <typename T>
+    struct bslma_managed_ptr
+    {
+        using type = bslma::ManagedPtr<T>;
+        template <typename... Args>
+        type make(Args&&... args) const {
+            return bslma::ManagedPtr<T>(new T(std::forward<Args>(args)...));
+        }
+        void kill(type const&) const {
+        }
+    };
+
 }
 
 // ----------------------------------------------------------------------------
@@ -175,7 +278,7 @@ namespace
     struct array
     {
         int values[Size];
-        array(int value) { values[Size - 1] = value; }
+        array(int value = 0) { values[Size - 1] = value; }
         operator int()  const { return values[Size - 1]; }
     };
 }
@@ -188,13 +291,15 @@ namespace
     void measure(cpu::tube::context&     context,
                  std::string             name,
                  int                     size,
-                 Competitor const&       competitor)
+                 Competitor const&       competitor,
+                 std::string             type)
     {
         auto timer = context.start();
 
         unsigned int sum{};
         {
             std::vector<typename Competitor::type> container;
+            container.reserve(size);
             for (int i(0); i != size; ++i) {
                 container.emplace_back(competitor.make(i));
             }
@@ -206,17 +311,23 @@ namespace
         auto time = timer.measure();
             
         std::ostringstream out;
-        out << name << " [" << size << "]";
+        out << name << " |" << type << "| " << size;
         context.report(out.str(), time, sum);
     }
 
     template <typename T>
     void run_tests(cpu::tube::context& context, int size, std::string type) {
-        measure(context, "" + type + "*                  ", size, raw_ptr<T>());
-        measure(context, "std::unique_ptr<" + type + ">  ", size, unique_ptr<T>());
-        measure(context, "std::shared_ptr<" + type + ">  ", size, shared_ptr<T>());
-        measure(context, "boost::shared_ptr<" + type + ">", size, boost_shared_ptr<T>());
-        measure(context, "rc_ptr<" + type + ">           ", size, rc_ptr<T>());
+        measure(context, "T*                   ", size, raw_ptr<T>(), type);
+        measure(context, "std::unique_ptr<T>   ", size, unique_ptr<T>(), type);
+        measure(context, "std::shared_ptr<T>   ", size, shared_ptr<T>(), type);
+        measure(context, "boost::shared_ptr<T> ", size, boost_shared_ptr<T>(), type);
+        measure(context, "rc_ptr<T>            ", size, rc_ptr<T>(), type);
+        measure(context, "mv_ptr<T>            ", size, mv_ptr<T>(), type);
+        measure(context, "bsl::shared_ptr<T>   ", size, bsl_shared_ptr<T>(), type);
+#if !defined(__INTEL_COMPILER)
+        measure(context, "bslma::ManagedPtr<T> ", size, bslma_managed_ptr<T>(), type);
+#endif
+        std::cout << '\n';
     }
     template <typename T>
     void run_tests(cpu::tube::context& context, std::string type) {

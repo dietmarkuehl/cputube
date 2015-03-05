@@ -47,6 +47,12 @@ CLANGXX   = clang++
 AR        = ar
 ARFLAGS   = rcu
 USE_CXX11 = yes
+BSL_CPPFLAGS += -I/usr/local/include/bsl
+BSL_CPPFLAGS += -I/usr/local/include/bdl
+BSL_LDLIBS   += -lbsl
+
+CPPFLAGS = $(BSL_CPPFLAGS)
+LDLIBS   = $(BSL_LDLIBS)
 
 ifeq ($(USE_CXX11),yes)
     CPPFLAGS += -DUSE_CXX11
@@ -161,7 +167,7 @@ $(OBJ):
 	mkdir $(OBJ)
 
 $(OBJ)/cputest_$(NAME): $(OBJ)/libcputube.a $(TESTFILES)
-	$(CXX) -o $@ $(LDFLAGS) $(TESTFILES) -L$(OBJ) -lcputube
+	$(CXX) -o $@ $(LDFLAGS) $(TESTFILES) -L$(OBJ) -lcputube $(LDLIBS)
 
 $(OBJ)/libcputube.a: $(LIBFILES)
 	$(AR) $(ARFLAGS) $@ $(LIBFILES)
