@@ -121,7 +121,7 @@ namespace
     {
         void operator()(std::string& text) const {
             text.erase(std::remove_if(text.begin(), text.end(),
-                                      [&](char c) { return '0' <= c && c <= '9'; }),
+                                      [&](char c) { return !('0' <= c && c <= '9'); }),
                 text.end());
         }
     };
@@ -322,7 +322,7 @@ int main(int ac, char* av[])
     test::measure(context, "use_remove_if_str_find", text, use_remove_if_str_find());
     test::measure(context, "use_remove_if_find", text, use_remove_if_find());
     test::measure(context, "use_remove_if_binary_search", text, use_remove_if_binary_search());
-    test::measure(context, "use_remove_if_compare", text, use_remove_if_ctype());
+    test::measure(context, "use_remove_if_compare", text, use_remove_if_compare());
     test::measure(context, "use_remove_if_ctype", text, use_remove_if_ctype());
     test::measure(context, "use_remove_if_ctype_ptr_fun", text, use_remove_if_ctype());
     test::measure(context, "use_remove_if_hash", text, use_remove_if_hash());

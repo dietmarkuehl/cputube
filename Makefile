@@ -27,6 +27,7 @@ NAME = ptr-function-calls
 NAME = functions
 NAME = replace
 NAME = get-digits
+NAME = smart-pointers
 
 TESTS = \
 	accumulate-int-array \
@@ -57,9 +58,10 @@ LIBCXX   = /Users/kuehl/src/llvm/libcxx
 ifeq ($(COMPILER),gcc)
     CXX      = $(GXX)
     DEPFLAGS = -M
-    xOPTFLAGS = -g -finline-functions
+    xOPTFLAGS += -g -finline-functions
+    xLOPTFLAGS += -pthread
     xLTOFLAGS = -flto
-    LOPTFLAGS = -O3
+    LOPTFLAGS += -O3
     xLOPTFLAGS += -fno-tree-vectorize
 
     ifeq ($(USE_CXX11),yes)
