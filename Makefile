@@ -23,21 +23,20 @@
 #   OTHER DEALINGS IN THE SOFTWARE. 
 #  ----------------------------------------------------------------------------
 
-NAME = ptr-function-calls
-NAME = functions
-NAME = replace
-NAME = get-digits
 NAME = smart-pointers
 
 TESTS = \
 	accumulate-int-array \
 	functions \
+	get-digits \
+	ptr-function-calls  \
+	replace \
 	search-integer \
 	search-short-string \
 	sequence-iteration \
+	smart-pointers \
 	write-characters  \
 	write-ints  \
-	ptr-function-calls  \
 
 #  ----------------------------------------------------------------------------
 
@@ -76,7 +75,7 @@ ifeq ($(COMPILER),gcc)
         CPPFLAGS += -ansi -pedantic
     endif
     CPPLFAGS += -DIS_GCC
-    CXXFLAGS += -W -Wall
+    CXXFLAGS += -W -Wall -Wno-unused-local-typedefs
     LDFLAGS  += $(LTOFLAGS)
 endif
 ifeq ($(COMPILER),clang)
@@ -157,6 +156,13 @@ all:
 	do \
 	    $(MAKE) check NAME=$$f; \
 	done
+
+build-all:
+	for f in $(TESTS); \
+	do \
+	    $(MAKE) NAME=$$f $(OBJ)/cputest_$$f; \
+	done
+
 
 .PHONY: check
 check: $(OBJ)/cputest_$(NAME)
