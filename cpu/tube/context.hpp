@@ -28,7 +28,9 @@
 
 #include "cpu/tube/timer.hpp"
 #include "cpu/tube/heap_fragment.hpp"
+#include "cpu/tube/test_case.hpp"
 
+#include <fstream>
 #include <string>
 #include <sstream>
 #include <utility>
@@ -51,17 +53,33 @@ namespace cpu
 class cpu::tube::context
 {
 private:
+    std::string     d_testname;
+    std::string     d_arch;
+    std::string     d_processor;
     char const*     d_compiler;
     char const*     d_flags;
     heap_fragmenter d_fragment;
+    std::ofstream   d_json;
 	
     template <typename T>
     static void format(std::vector<std::string>& argv, T const& value);
 
     void do_report(char const* name, cpu::tube::duration duration,
                    std::vector<std::string> const& argv);
+
+    template <typename Measure, typename Case>
+    void intern_run(std::ostream&, int start, int end, Measure measure,
+                    cpu::tube::test_case<Case> case_, char const* = "");
+    template <typename Measure, typename Case, typename... Cases>
+    void intern_run(std::ostream&, int start, int end, Measure measure,
+                    cpu::tube::test_case<Case> case_,
+                    cpu::tube::test_case<Cases>... cases);
+
+    context(context const&) = delete;
+    void operator=(context const&) = delete;
 public:
     context(int ac, char* av[], char const* arch, char const* compiler, char const* flags);
+    ~context();
 
     cpu::tube::timer start();
 
@@ -82,6 +100,10 @@ public:
     void report(std::string const& name, cpu::tube::duration duration, T const& arg) {
         this->report(name.c_str(), duration, arg);
     }
+
+    template <typename Measure, typename... Cases>
+    void run(int start, int end, std::string const& group, Measure measure,
+             cpu::tube::test_case<Cases>... cases);
 };
 
 // ----------------------------------------------------------------------------
@@ -132,6 +154,76 @@ cpu::tube::context::report(char const*         name,
     std::vector<std::string> argv;
     cpu::tube::context::format(argv, arg);
     this->do_report(name, duration, argv);
+}
+
+// ----------------------------------------------------------------------------
+
+template <typename Measure, typename Case>
+void
+cpu::tube::context::intern_run(std::ostream&              out,
+                               int                        start,
+                               int                        end,
+                               Measure                    measure,
+                               cpu::tube::test_case<Case> case_,
+                               char const*                separator)
+{
+    out << "{ "
+        << "name:\"" << case_.name() << "\", "
+        << "results:[ ";
+    bool first(true);
+    for (int i(start); i <= end; i *= 10) {
+        for (int j(1); j < 10; j *= 2) {
+            int size(i * j);
+            auto result = measure.measure(*this, size, case_.test());
+            this->report(case_.name().c_str(), result.first, size);
+            out << (first? "": ",")
+                << " { "
+                << "result:\"" << result.second << "\", "
+                << "size:" << size << ", "
+                << "time:" << result.first << "  "
+                << "} " << std::flush;
+            first = false;
+        }
+    }
+    out << "] }" << separator << "\n";
+}
+
+template <typename Measure, typename Case, typename... Cases>
+void
+cpu::tube::context::intern_run(std::ostream& out,
+                               int start, int end,
+                               Measure measure,
+                               cpu::tube::test_case<Case> case_,
+                               cpu::tube::test_case<Cases>... cases)
+{
+    this->intern_run(out, start, end, measure, case_, ", ");
+    this->intern_run(out, start, end, measure, cases...);
+}
+
+template <typename Measure, typename... Cases>
+void
+cpu::tube::context::run(int                             start,
+                        int                             end,
+                        std::string const&              group,
+                        Measure                         measure,
+                        cpu::tube::test_case<Cases>...  cases)
+{
+    if (this->d_json) {
+        this->d_json << ",\n";
+    }
+    else {
+        this->d_json.open("results/" + this->d_testname + ".json");
+        this->d_json << "[ ";
+    }
+    this->d_json << "{ "
+                 << "group:\"" << group << "\", "
+                 << "arch:\"" << this->d_arch << "\" "
+                 << "processor:\"" << this->d_processor << "\" "
+                 << "compiler:\"" << this->d_compiler << "\" "
+                 << "flags:\"" << this->d_flags << "\" "
+                 << "test_cases:[\n";
+    this->intern_run(this->d_json, start, end, measure, cases...);
+    this->d_json << "] }\n";
 }
 
 // ----------------------------------------------------------------------------

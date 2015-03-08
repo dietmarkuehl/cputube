@@ -28,6 +28,7 @@
 #include <functional>
 #include <iomanip>
 #include <ostream>
+#include <sstream>
 #include <cctype>
 #include <inttypes.h>
 
@@ -108,6 +109,15 @@ std::ostream& cpu::tube::processor::print(std::ostream& out)
 #endif
     out << std::dec << std::setfill(' ');
     return out;
+}
+
+// ----------------------------------------------------------------------------
+
+std::string cpu::tube::processor::value()
+{
+    std::ostringstream out;
+    out << processor();
+    return out.str();
 }
 
 // ----------------------------------------------------------------------------

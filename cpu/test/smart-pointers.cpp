@@ -26,6 +26,7 @@
 #include "cpu/tube/context.hpp"
 
 #include <algorithm>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
@@ -166,7 +167,7 @@ namespace cputube
 namespace
 {
     template <typename T>
-    struct raw_ptr
+    struct raw_config
     {
         using type = T*;
         template <typename... Args>
@@ -184,7 +185,7 @@ namespace
     }
 
     template <typename T>
-    struct unique_ptr
+    struct unique_config
     {
         using type = std::unique_ptr<T>;
         template <typename... Args>
@@ -196,7 +197,7 @@ namespace
     };
 
     template <typename T>
-    struct shared_ptr
+    struct shared_config
     {
         using type = std::shared_ptr<T>;
         template <typename... Args>
@@ -208,7 +209,7 @@ namespace
     };
 
     template <typename T>
-    struct boost_shared_ptr
+    struct boost_shared_config
     {
         using type = boost::shared_ptr<T>;
         template <typename... Args>
@@ -220,7 +221,7 @@ namespace
     };
 
     template <typename T>
-    struct rc_ptr
+    struct rc_config
     {
         using type = cputube::rc_ptr<T>;
         template <typename... Args>
@@ -232,7 +233,7 @@ namespace
     };
 
     template <typename T>
-    struct mv_ptr
+    struct mv_config
     {
         using type = cputube::mv_ptr<T>;
         template <typename... Args>
@@ -244,7 +245,7 @@ namespace
     };
 
     template <typename T>
-    struct bsl_shared_ptr
+    struct bsl_shared_config
     {
         using type = bsl::shared_ptr<T>;
         template <typename... Args>
@@ -257,7 +258,7 @@ namespace
     };
 
     template <typename T>
-    struct bslma_managed_ptr
+    struct bslma_managed_config
     {
         using type = bslma::ManagedPtr<T>;
         template <typename... Args>
@@ -287,55 +288,48 @@ namespace
 
 namespace
 {
-    template <typename Competitor>
-    void measure(cpu::tube::context&     context,
-                 std::string             name,
-                 int                     size,
-                 Competitor const&       competitor,
-                 std::string             type)
+    struct runner
     {
-        auto timer = context.start();
-
-        unsigned int sum{};
+        template <typename Competitor>
+        std::pair<cpu::tube::duration, unsigned int>
+        measure(cpu::tube::context& context,
+                int                 size,
+                Competitor const&   competitor) const
         {
-            std::vector<typename Competitor::type> container;
-            container.reserve(size);
-            for (int i(0); i != size; ++i) {
-                container.emplace_back(competitor.make(i));
+            auto timer = context.start();
+
+            unsigned int sum{};
+            {
+                std::vector<typename Competitor::type> container;
+                container.reserve(size);
+                for (int i(0); i != size; ++i) {
+                    container.emplace_back(competitor.make(i));
+                }
+                for (auto&& ptr: container) {
+                    sum += *ptr;
+                    competitor.kill(ptr);
+                }
             }
-            for (auto&& ptr: container) {
-                sum += *ptr;
-                competitor.kill(ptr);
-            }
+            auto time = timer.measure();
+            return std::make_pair(time, sum);
         }
-        auto time = timer.measure();
-            
-        std::ostringstream out;
-        out << name << " |" << type << "| " << size;
-        context.report(out.str(), time, sum);
-    }
+    };
 
     template <typename T>
-    void run_tests(cpu::tube::context& context, int size, std::string type) {
-        measure(context, "T*                   ", size, raw_ptr<T>(), type);
-        measure(context, "std::unique_ptr<T>   ", size, unique_ptr<T>(), type);
-        measure(context, "std::shared_ptr<T>   ", size, shared_ptr<T>(), type);
-        measure(context, "boost::shared_ptr<T> ", size, boost_shared_ptr<T>(), type);
-        measure(context, "rc_ptr<T>            ", size, rc_ptr<T>(), type);
-        measure(context, "mv_ptr<T>            ", size, mv_ptr<T>(), type);
-        measure(context, "bsl::shared_ptr<T>   ", size, bsl_shared_ptr<T>(), type);
+    void run_tests(cpu::tube::context& context, std::string type)
+    {
+        context.run(10, 100000, type, runner(),
+                    cpu::tube::make_test_case(type + "*", raw_config<T>()),
+                    cpu::tube::make_test_case("std::unique_ptr<" + type + ">", unique_config<T>()),
+                    cpu::tube::make_test_case("std::shared_ptr<" + type + ">", shared_config<T>()),
+                    cpu::tube::make_test_case("boost::shared_ptr<" + type + ">", boost_shared_config<T>()),
+                    cpu::tube::make_test_case("rc_ptr<" + type + ">", rc_config<T>()),
+                    cpu::tube::make_test_case("mv_ptr<" + type + ">", mv_config<T>()),
 #if !defined(__INTEL_COMPILER)
-        measure(context, "bslma::ManagedPtr<T> ", size, bslma_managed_ptr<T>(), type);
+                    cpu::tube::make_test_case("bslma::ManagedPtr<" + type + ">", bslma_managed_config<T>()),
 #endif
-        std::cout << '\n';
-    }
-    template <typename T>
-    void run_tests(cpu::tube::context& context, std::string type) {
-        for (int i(10); i <= 1000000; i *= 10) {
-            for (int j(1); j < 10; j *= 2) {
-                run_tests<T>(context, i * j, type);
-            }
-        }
+                    cpu::tube::make_test_case("bsl::shared_ptr<" + type + ">", bsl_shared_config<T>())
+                    );
     }
 }
 
@@ -344,15 +338,7 @@ namespace
 int main(int ac, char* av[])
 {
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
-    int size(ac == 1? 0: atoi(av[1]));
-    if (size) {
-        run_tests<int>(context, size, "int");
-        run_tests<array<8>>(context, size, "array<8>");
-        run_tests<array<16>>(context, size, "array<16>");
-    }
-    else {
-        run_tests<int>(context, "int");
-        run_tests<array<8>>(context, "array<8>");
-        run_tests<array<16>>(context, "array<16>");
-    }
+    run_tests<int>(context, "int");
+    run_tests<array<8>>(context, "array<8>");
+    run_tests<array<16>>(context, "array<16>");
 }

@@ -1,6 +1,6 @@
-// cpu/tube/processor.hpp                                             -*-C++-*-
+// cpu/tube/test_case.hpp                                             -*-C++-*-
 // ----------------------------------------------------------------------------
-//  Copyright (C) 2013 Dietmar Kuehl http://www.dietmar-kuehl.de         
+//  Copyright (C) 2015 Dietmar Kuehl http://www.dietmar-kuehl.de         
 //                                                                       
 //  Permission is hereby granted, free of charge, to any person          
 //  obtaining a copy of this software and associated documentation       
@@ -23,31 +23,45 @@
 //  OTHER DEALINGS IN THE SOFTWARE. 
 // ----------------------------------------------------------------------------
 
-#ifndef INCLUDED_CPU_TUBE_PROCESSOR
-#define INCLUDED_CPU_TUBE_PROCESSOR
+#ifndef INCLUDED_CPU_TUBE_TEST_CAST
+#define INCLUDED_CPU_TUBE_TEST_CAST
 
-#include <iosfwd>
+#include <string>
 
 // ----------------------------------------------------------------------------
 
-namespace cpu
-{
-    namespace tube
-    {
-        class processor;
-        std::ostream& operator<< (std::ostream&, processor const&);
+namespace cpu {
+    namespace tube {
+        template <typename T> class test_case;
+        template <typename T>
+        test_case<T> make_test_case(std::string const&, T const&);
     }
 }
 
 // ----------------------------------------------------------------------------
 
-class cpu::tube::processor
+template <typename T>
+class cpu::tube::test_case
 {
+    std::string d_name;
+    T           d_test;
 public:
-    static std::string value();
-    // possibly there are some useful attributes to be exposed
-    static std::ostream& print(std::ostream&);
+    explicit test_case(std::string const& name, T const& test = T())
+        : d_name(name)
+        , d_test(test) {
+    }
+    std::string name() const { return this->d_name; }
+    T const&    test() const { return this->d_test; }
 };
+
+// ----------------------------------------------------------------------------
+
+template <typename T>
+cpu::tube::test_case<T>
+cpu::tube::make_test_case(std::string const& name, T const& test)
+{
+    return cpu::tube::test_case<T>(name, test);
+}
 
 // ----------------------------------------------------------------------------
 

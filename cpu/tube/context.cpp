@@ -32,23 +32,38 @@
 
 // ----------------------------------------------------------------------------
 
-cpu::tube::context::context(int, char*[],
+cpu::tube::context::context(int, char*  av[],
                             char const* arch,
                             char const* compiler,
                             char const* flags)
-    : d_compiler(compiler)
+    : d_testname(av[0])
+    , d_arch(arch)
+    , d_processor(cpu::tube::processor().value())
+    , d_compiler(compiler)
     , d_flags(flags)
       //-dk:TODO the fragmentation should probably be configurable
       // this will leave a the heap in a fragmented state
       // with many small allocations (1b-64k) littered around at random
       // , d_fragment(1024*1024, 64*1024)
     , d_fragment(1024, 64*1024)
+    , d_json()
 {
-    std::cout << "arch=" << arch << ' '
+    this->d_json.setstate(std::ios_base::failbit);
+    std::replace(d_testname.begin(), d_testname.end(), '/', '-');
+    std::string::size_type pos(this->d_testname.find("cputest_"));
+    if (pos != std::string::npos) {
+        this->d_testname = this->d_testname.substr(0, pos) + this->d_testname.substr(pos + 8);
+    }
+    std::cout << "testname=" << this->d_testname << ' '
+              << "arch=" << arch << ' '
               << "processor=" << cpu::tube::processor() << ' '
               << "compiler=" << compiler << ' '
               << "flags=" << flags << ' '
               << '\n';
+}
+ 
+cpu::tube::context::~context() {
+    this->d_json << "]\n";
 }
 
 void

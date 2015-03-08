@@ -50,6 +50,8 @@ while (<>)
           if ($line =~ /:.*\s(\S*\/)$file\.[cC]/)
             {
               my $dir = $1;
+              $dir =~ s/\///;
+              $dir =~ s/\//_/;
               $line =~ s/^/$dir/;
             }
         }
