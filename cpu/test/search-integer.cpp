@@ -34,6 +34,7 @@
 #include <unordered_set>
 #endif
 #include "boost/unordered_set.hpp"
+#include "boost/container/flat_set.hpp"
 #include <vector>
 #if !defined(__INTEL_COMPILER)
 #include "google/cpp-btree/btree_set.h"
@@ -93,6 +94,16 @@ namespace
     {
         boost::unordered_set<int> d_values;
         boost_unordered_set_find(std::vector<int> const& values)
+            : d_values(values.begin(), values.end()) {}
+        bool contains(int value) const {
+            return this->d_values.find(value) != this->d_values.end();
+        }
+    };
+
+    struct boost_flat_set_find
+    {
+        boost::container::flat_set<int> d_values;
+        boost_flat_set_find(std::vector<int> const& values)
             : d_values(values.begin(), values.end()) {}
         bool contains(int value) const {
             return this->d_values.find(value) != this->d_values.end();
@@ -185,6 +196,7 @@ namespace
         }
 #endif
         measure(context, sought, "boost unordered set find()", size, boost_unordered_set_find(values));
+        measure(context, sought, "boost flat set find()", size, boost_flat_set_find(values));
 #if !defined(__INTEL_COMPILER)
         measure(context, sought, "b-tree set find()",          size, btree_set_find(values));
 #else

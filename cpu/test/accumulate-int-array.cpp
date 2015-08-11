@@ -78,6 +78,17 @@ namespace competitor
     }
 
     template <typename T>
+    T pre_increment_index_while(T* array, int size) {
+        T result(0);
+        int index(0);
+        while (index != size) {
+            result += array[index];
+            ++index;
+        }
+        return result;
+    }
+
+    template <typename T>
     T pre_increment_less_index(T* array, int size) {
         T result(0);
         for (int index(0); index < size; ++index) {
@@ -145,6 +156,17 @@ namespace competitor
         T result(0);
         for (T* end(array + size); array != end; ++array) {
             result += *array;
+        }
+        return result;
+    }
+
+    template <typename T>
+    T pre_increment_pointer_while(T* array, int size) {
+        T result(0);
+        T* end(array + size);
+        while (array != end) {
+            result += *array;
+            ++array;
         }
         return result;
     }
@@ -326,6 +348,8 @@ namespace test
 #if USE_CXX11
         test::measure(context, type + " range for", competitor::range_for<T>);
 #endif
+        test::measure(context, type + " pre increment index (while)", competitor::pre_increment_index_while<T>);
+        test::measure(context, type + " pre increment pointer (while)", competitor::pre_increment_pointer_while<T>);
         test::measure(context, type + " pre increment index", competitor::pre_increment_index<T>);
         test::measure(context, type + " pre increment less index", competitor::pre_increment_less_index<T>);
         test::measure(context, type + " post increment index", competitor::post_increment_index<T>);

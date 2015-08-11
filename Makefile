@@ -24,6 +24,7 @@
 #  ----------------------------------------------------------------------------
 
 NAME = smart-pointers
+NAME = accumulate-int-array
 
 TESTS = \
 	accumulate-int-array \
@@ -119,7 +120,7 @@ CPPFLAGS += -DCPUTUBE_ARCH='"$(ARCH)"' \
             -DCPUTUBE_COMPILER='"$(COMPILER)"' \
             -DCPUTUBE_FLAGS='"$(OPTFLAGS)"'
 
-CPPFLAGS += -I.
+CPPFLAGS += -I/usr/local/include -I.
 CXXFILES = \
 	cpu/tube/chrono.cpp    \
 	cpu/tube/timer.cpp     \
