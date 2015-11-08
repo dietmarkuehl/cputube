@@ -25,6 +25,7 @@
 
 NAME = smart-pointers
 NAME = accumulate-int-array
+NAME = unique-strings
 
 TESTS = \
 	accumulate-int-array \
@@ -42,7 +43,7 @@ TESTS = \
 #  ----------------------------------------------------------------------------
 
 COMPILER  = gcc
-GXX       = g++
+GXX       = /opt/gcc-current/bin/g++
 CLANGXX   = clang++
 AR        = ar
 ARFLAGS   = rcu
