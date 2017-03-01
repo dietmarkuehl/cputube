@@ -34,8 +34,10 @@
 #include <set>
 #include <unordered_set>
 #include <vector>
+#if defined(HAS_BSL)
 #include <bsl_set.h>
 #include <bsl_unordered_set.h>
+#endif
 #include <stdlib.h>
 
 // ----------------------------------------------------------------------------
@@ -123,6 +125,7 @@ namespace {
         }
     };
 
+#if defined(HAS_BSL)
     struct bsl_set {
         std::string name() const { return "bsl::set<std::string>"; }
         std::size_t run(std::vector<std::string> const& keys) const {
@@ -184,6 +187,7 @@ namespace {
             return values.size();
         }
     };
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -216,12 +220,14 @@ static void measure(cpu::tube::context&             context,
     measure(context, keys, basesize, std_unordered_set());
     measure(context, keys, basesize, std_insert_unordered_set());
     measure(context, keys, basesize, std_reserve_unordered_set());
+#if defined(HAS_BSL)
     measure(context, keys, basesize, bsl_set());
     measure(context, keys, basesize, bsl_insert_set());
     measure(context, keys, basesize, bsl_reverse_set());
     measure(context, keys, basesize, bsl_unordered_set());
     measure(context, keys, basesize, bsl_insert_unordered_set());
     measure(context, keys, basesize, bsl_reserve_unordered_set());
+#endif
 }
 
 // ----------------------------------------------------------------------------

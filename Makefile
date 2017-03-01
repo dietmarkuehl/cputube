@@ -26,6 +26,7 @@
 NAME = smart-pointers
 NAME = accumulate-int-array
 NAME = unique-strings
+NAME = search-integer
 
 TESTS = \
 	accumulate-int-array \
@@ -48,9 +49,9 @@ CLANGXX   = clang++
 AR        = ar
 ARFLAGS   = rcu
 USE_CXX11 = yes
-BSL_CPPFLAGS += -I/usr/local/include/bsl
-BSL_CPPFLAGS += -I/usr/local/include/bdl
-BSL_LDLIBS   += -lbsl
+# BSL_CPPFLAGS += -I/usr/local/include/bsl -DHAS_BSL
+# BSL_CPPFLAGS += -I/usr/local/include/bdl
+# BSL_LDLIBS   += -lbsl
 
 CPPFLAGS = $(BSL_CPPFLAGS)
 LDLIBS   = $(BSL_LDLIBS)

@@ -26,6 +26,7 @@
 #include "cpu/tube/context.hpp"
 
 #include <algorithm>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
@@ -33,10 +34,12 @@
 #if !defined(__INTEL_COMPILER)
 #include <unordered_set>
 #endif
+#if defined(HAS_BOOST)
 #include "boost/unordered_set.hpp"
 #include "boost/container/flat_set.hpp"
+#endif
 #include <vector>
-#if !defined(__INTEL_COMPILER)
+#if !defined(__INTEL_COMPILER) && defined(HAS_GOOGLE)
 #include "google/cpp-btree/btree_set.h"
 #endif
 #include <stdlib.h>
@@ -78,6 +81,17 @@ namespace
         }
     };
 
+    struct dynamic_set_find
+    {
+        std::set<int, std::function<bool(int, int)>> d_values;
+        dynamic_set_find(std::vector<int> const& values)
+            : d_values(values.begin(), values.end(),
+                       [](int a, int b){ return a < b; }) {}
+        bool contains(int value) const {
+            return this->d_values.find(value) != this->d_values.end();
+        }
+    };
+
 #if !defined(__INTEL_COMPILER)
     struct unordered_set_find
     {
@@ -90,6 +104,7 @@ namespace
     };
 #endif
 
+#if defined(HAS_BOOST)
     struct boost_unordered_set_find
     {
         boost::unordered_set<int> d_values;
@@ -109,8 +124,9 @@ namespace
             return this->d_values.find(value) != this->d_values.end();
         }
     };
+#endif
 
-#if !defined(__INTEL_COMPILER)
+#if !defined(__INTEL_COMPILER) && defined(HAS_GOOGLE)
     struct btree_set_find
     {
         btree::btree_set<int> d_values;
@@ -186,6 +202,7 @@ namespace
         }
         measure(context, sought, "vector lower_bound()",       size, vector_lower_bound(values));
         measure(context, sought, "set find()",                 size, set_find(values));
+        measure(context, sought, "dynamic set find()",         size, dynamic_set_find(values));
 #if !defined(__INTEL_COMPILER)
         measure(context, sought, "unordered set find()",       size, unordered_set_find(values));
 #else
@@ -195,9 +212,11 @@ namespace
             context.stub(out.str());
         }
 #endif
+#if defined(HAS_BOOST)
         measure(context, sought, "boost unordered set find()", size, boost_unordered_set_find(values));
         measure(context, sought, "boost flat set find()", size, boost_flat_set_find(values));
-#if !defined(__INTEL_COMPILER)
+#endif
+#if !defined(__INTEL_COMPILER) && defined(HAS_GOOGLE)
         measure(context, sought, "b-tree set find()",          size, btree_set_find(values));
 #else
         {
