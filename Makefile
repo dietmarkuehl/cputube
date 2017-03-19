@@ -23,23 +23,25 @@
 #   OTHER DEALINGS IN THE SOFTWARE. 
 #  ----------------------------------------------------------------------------
 
-NAME = smart-pointers
-NAME = accumulate-int-array
-NAME = unique-strings
-NAME = search-integer
+NAME = test/smart-pointers
+NAME = test/accumulate-int-array
+NAME = test/unique-strings
+NAME = test/search-integer
+
+NAME = algorithm/all_of
 
 TESTS = \
-	accumulate-int-array \
-	functions \
-	get-digits \
-	ptr-function-calls  \
-	replace \
-	search-integer \
-	search-short-string \
-	sequence-iteration \
-	smart-pointers \
-	write-characters  \
-	write-ints  \
+	test/accumulate-int-array \
+	test/functions \
+	test/get-digits \
+	test/ptr-function-calls  \
+	test/replace \
+	test/search-integer \
+	test/search-short-string \
+	test/sequence-iteration \
+	test/smart-pointers \
+	test/write-characters  \
+	test/write-ints  \
 
 #  ----------------------------------------------------------------------------
 
@@ -60,6 +62,8 @@ ifeq ($(USE_CXX11),yes)
     CPPFLAGS += -DUSE_CXX11
 endif
 
+CPPFLAGS += -I../ParallelSTL/include
+
 LIBCXX   = /Users/kuehl/src/llvm/libcxx
 # LIBSTDCXX = /opt/gcc-current/include/c++/4.9.0
 
@@ -73,7 +77,7 @@ ifeq ($(COMPILER),gcc)
     xLOPTFLAGS += -fno-tree-vectorize
 
     ifeq ($(USE_CXX11),yes)
-        CPPFLAGS += -std=c++11
+        CPPFLAGS += -std=c++17
     else
         CPPFLAGS += -ansi -pedantic
     endif
@@ -171,10 +175,6 @@ build-all:
 check: $(OBJ)/cputest_$(NAME)
 	$(OBJ)/cputest_$(NAME) | tee $(OBJ)/cputest_$(NAME).result
 
-.PHONY: $(OBJ)
-$(OBJ):
-	mkdir $(OBJ)
-
 $(OBJ)/cputest_$(NAME): $(OBJ)/libcputube.a $(TESTFILES)
 	$(CXX) -o $@ $(LDFLAGS) $(TESTFILES) -L$(OBJ) -lcputube $(LDLIBS)
 
@@ -182,12 +182,12 @@ $(OBJ)/libcputube.a: $(LIBFILES)
 	$(AR) $(ARFLAGS) $@ $(LIBFILES)
 
 $(OBJ)/cputube_%.o: cpu/tube/%.cpp
-	@if [ ! -d $(OBJ) ]; then mkdir $(OBJ); fi
+	@mkdir -p $(@D)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LOPTFLAGS) -c -o $@ $(@:$(OBJ)/cputube_%.o=cpu/tube/%.cpp)
 
-$(OBJ)/cputest_%.o: cpu/test/%.cpp
-	@if [ ! -d $(OBJ) ]; then mkdir $(OBJ); fi
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(OPTFLAGS) -c -o $@ $(@:$(OBJ)/cputest_%.o=cpu/test/%.cpp)
+$(OBJ)/cputest_%.o: cpu/%.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(OPTFLAGS) -c -o $@ $(@:$(OBJ)/cputest_%.o=cpu/%.cpp)
 
 test: cpuid
 
@@ -203,8 +203,8 @@ distclean:
 
 .PHONY: depend
 depend $(OBJ)/make.depend:
-	@if [ ! -d $(OBJ) ]; then mkdir $(OBJ); fi
-	$(CXX) $(CPPFLAGS) $(DEPFLAGS) $(CXXFILES) cpu/test/$(NAME).cpp | \
+	@mkdir -p $(@D)
+	$(CXX) $(CPPFLAGS) $(DEPFLAGS) $(CXXFILES) cpu/$(NAME).cpp | \
 	    scripts/fixdepend  $(OBJ) > $(OBJ)/make.depend
 
 include $(OBJ)/make.depend
