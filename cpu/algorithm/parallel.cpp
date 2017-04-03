@@ -49,6 +49,7 @@ int main() {
     std::vector<int> v2;
     using iterator = std::vector<int>::iterator;
 
+#if 0
     call<bool>([](auto... a){ return CA::all_of(a...); },
                v0.begin(), v0.end(), [](auto){ return true; });
     call<bool>([](auto... a){ return CA::any_of(a...); },
@@ -144,6 +145,39 @@ int main() {
                    v0.begin(), v0.end(), v1.begin(), 0, 0);
     call<iterator>([](auto... a){ return CA::replace_copy_if(a...); },
                    v0.begin(), v0.end(), v1.begin(), [](auto){ return true; }, 0);
+
+    call<void>([](auto... a){ return CA::fill(a...); },
+                   v0.begin(), v0.end(), 0);
+    call<void>([](auto... a){ return CA::fill_n(a...); }, //-dk:TODO fix return type
+               v0.begin(), 0, 0);
+    call<void>([](auto... a){ return CA::generate(a...); },
+               v0.begin(), v0.end(), [](){ return 0; });
+    call<void>([](auto... a){ return CA::generate_n(a...); }, //-dk:TODO fix return type
+               v0.begin(), 0, [](){ return 0; });
+
+    call<iterator>([](auto... a){ return CA::remove(a...); },
+                   v0.begin(), v0.end(), 0);
+    call<iterator>([](auto... a){ return CA::remove_if(a...); },
+                   v0.begin(), v0.end(), [](auto){ return true; });
+    call<iterator>([](auto... a){ return CA::remove_copy(a...); },
+                   v0.begin(), v0.end(), v1.begin(), 0);
+    call<iterator>([](auto... a){ return CA::remove_copy_if(a...); },
+                   v0.begin(), v0.end(), v1.begin(), [](auto){ return true; });
+
+    call<iterator>([](auto... a){ return CA::unique(a...); },
+                   v0.begin(), v0.end());
+    call<iterator>([](auto... a){ return CA::unique(a...); },
+                   v0.begin(), v0.end(), [](auto, auto){ return true; });
+    call<iterator>([](auto... a){ return CA::unique_copy(a...); },
+                   v0.begin(), v0.end(), v1.begin());
+    call<iterator>([](auto... a){ return CA::unique_copy(a...); },
+                   v0.begin(), v0.end(), v1.begin(), [](auto, auto){ return true; });
+#endif
+
+    call<void>([](auto... a){ return CA::reverse(a...); },
+               v0.begin(), v0.end());
+    call<void>([](auto... a){ return CA::reverse_copy(a...); },
+               v0.begin(), v0.end(), v1.begin());
 
     std::cout << "done\n";
 }

@@ -385,6 +385,140 @@ namespace cpu {
                 }
             }
             // ----------------------------------------------------------------
+            using std::fill;
+            template <typename F, typename... T>
+            void fill(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "fill(" << name << "fb, fe, value)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::fill_n;
+            template <typename F, typename S, typename... T>
+            auto fill_n(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f, s);
+                std::cout << "fill_n(" << name << "fb, n, value)\n";
+                if constexpr (cpu::execution::is_execution_policy_v<F>) {
+                    return s;
+                }
+                else {
+                    return f;
+                }
+            }
+            // ----------------------------------------------------------------
+            using std::generate;
+            template <typename F, typename... T>
+            void generate(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "generate(" << name << "fb, fe, fun)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::generate_n;
+            template <typename F, typename S, typename... T>
+            auto generate_n(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f, s);
+                std::cout << "generate_n(" << name << "fb, n, fun)\n";
+                if constexpr (cpu::execution::is_execution_policy_v<F>) {
+                    return s;
+                }
+                else {
+                    return f;
+                }
+            }
+            // ----------------------------------------------------------------
+            using std::remove;
+            template <typename F, typename S, typename... T>
+            auto remove(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f, s);
+                std::cout << "remove(" << name << "fb, fe, value)\n";
+                if constexpr (cpu::execution::is_execution_policy_v<F>) {
+                    return s;
+                }
+                else {
+                    return f;
+                }
+            }
+            // ----------------------------------------------------------------
+            using std::remove_if;
+            template <typename F, typename S, typename... T>
+            auto remove_if(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f, s);
+                std::cout << "remove_if(" << name << "fb, fe, pred)\n";
+                if constexpr (cpu::execution::is_execution_policy_v<F>) {
+                    return s;
+                }
+                else {
+                    return f;
+                }
+            }
+            // ----------------------------------------------------------------
+            using std::remove_copy;
+            template <typename F, typename S, typename... T>
+            auto remove_copy(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f, s);
+                std::cout << "remove_copy(" << name << "fb, fe, sb, value)\n";
+                if constexpr (cpu::execution::is_execution_policy_v<F>) {
+                    return s;
+                }
+                else {
+                    return f;
+                }
+            }
+            // ----------------------------------------------------------------
+            using std::remove_copy_if;
+            template <typename F, typename S, typename... T>
+            auto remove_copy_if(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f, s);
+                std::cout << "remove_copy_if(" << name << "fb, fe, sb, pred)\n";
+                if constexpr (cpu::execution::is_execution_policy_v<F>) {
+                    return s;
+                }
+                else {
+                    return f;
+                }
+            }
+            // ----------------------------------------------------------------
+            using std::unique;
+            template <typename F, typename S, typename... T>
+            auto unique(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f, s);
+                std::cout << "unique(" << name << "fb, fe)\n";
+                if constexpr (cpu::execution::is_execution_policy_v<F>) {
+                    return s;
+                }
+                else {
+                    return f;
+                }
+            }
+            // ----------------------------------------------------------------
+            using std::unique_copy;
+            template <typename F, typename S, typename... T>
+            auto unique_copy(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f, s);
+                std::cout << "unique_copy(" << name << "fb, fe, sb)\n";
+                if constexpr (cpu::execution::is_execution_policy_v<F>) {
+                    return s;
+                }
+                else {
+                    return f;
+                }
+            }
+            // ----------------------------------------------------------------
+            using std::reverse;
+            template <typename F, typename... T>
+            bool reverse(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "reverse(" << name << "fb, fe)\n";
+                return 0;
+            }
+            // ----------------------------------------------------------------
+            using std::reverse_copy;
+            template <typename F, typename... T>
+            bool reverse_copy(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "reverse_copy(" << name << "fb, fe, sb)\n";
+                return 0;
+            }
+            // ----------------------------------------------------------------
         }
     }
 }
