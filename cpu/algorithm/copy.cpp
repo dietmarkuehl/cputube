@@ -1,4 +1,4 @@
-// cpu/algorithm/any_of.cpp                                           -*-C++-*-
+// cpu/algorithm/copy.cpp                                             -*-C++-*-
 // ----------------------------------------------------------------------------
 //  Copyright (C) 2017 Dietmar Kuehl http://www.dietmar-kuehl.de         
 // ----------------------------------------------------------------------------
@@ -10,7 +10,6 @@
 #include "experimental/algorithm"
 #include "experimental/execution_policy"
 
-#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
@@ -23,28 +22,28 @@ namespace PSTL = std::experimental::parallel;
 
 namespace
 {
-    struct std_all_of
+    struct std_copy
     {
-        static char const* name() { return "std::all_of()"; }
-        template <typename InIt, typename Predicate>
-        bool operator()(InIt begin, InIt end, Predicate predicate) const {
-            return std::all_of(begin, end, predicate);
+        static char const* name() { return "std::copy()"; }
+        template <typename InIt, typename OutIt>
+        OutIt operator()(InIt begin, InIt end, OutIt to) const {
+            return std::copy(begin, end, to);
         }
     };
-    struct pstl_all_of_seq
+    struct pstl_copy_seq
     {
-        static char const* name() { return "PSTL::all_of(PSTL::seq)"; }
-        template <typename InIt, typename Predicate>
-        bool operator()(InIt begin, InIt end, Predicate predicate) const {
-            return PSTL::all_of(PSTL::seq, begin, end, predicate);
+        static char const* name() { return "PSTL::copy(PSTL::seq)"; }
+        template <typename InIt, typename OutIt>
+        OutIt operator()(InIt begin, InIt end, OutIt to) const {
+            return PSTL::copy(PSTL::seq, begin, end, to);
         }
     };
-    struct pstl_all_of_par
+    struct pstl_copy_par
     {
-        static char const* name() { return "PSTL::all_of(PSTL::par)"; }
-        template <typename InIt, typename Predicate>
-        bool operator()(InIt begin, InIt end, Predicate predicate) const {
-            return PSTL::all_of(PSTL::par, begin, end, predicate);
+        static char const* name() { return "PSTL::copy(PSTL::par)"; }
+        template <typename InIt, typename OutIt>
+        OutIt operator()(InIt begin, InIt end, OutIt to) const {
+            return PSTL::copy(PSTL::par, begin, end, to);
         }
     };
 }
@@ -55,30 +54,30 @@ namespace
 {
     template <typename Competitor>
     void measure(cpu::tube::context&     context,
-                 int                     limit,
-                 std::vector<int> const& values,
+                 std::vector<int> const& from,
+                 std::vector<int>&       to,
                  Competitor const&       competitor)
     {
         auto timer = context.start();
-        bool result = competitor(values.begin(), values.end(),
-                                 [limit](int value){ return value < limit; });
+        competitor(from.begin(), from.end(), to.begin());
         auto time = timer.measure();
 
         std::ostringstream out;
-        out << competitor.name() << " [" << values.size() << "]";
-        context.report(out.str(), time, result);
+        out << competitor.name() << " [" << from.size() << "]";
+        context.report(out.str(), time, "<none>");
     }
 
     void run_tests(cpu::tube::context& context, int size) {
-        std::vector<int> values;
-        int value{};
-        std::generate_n(std::back_inserter(values), size,
+        std::vector<int> from;
+        std::vector<int> to(size);
+        int value(0);
+        std::generate_n(std::back_inserter(from), size,
                         [value]() mutable { return ++value; });
 
-        measure(context, size + 1, values, std_all_of());
-        measure(context, size + 1, values, std_all_of());
-        measure(context, size + 1, values, pstl_all_of_seq());
-        measure(context, size + 1, values, pstl_all_of_par());
+        measure(context, from, to, std_copy());
+        measure(context, from, to, std_copy());
+        measure(context, from, to, pstl_copy_seq());
+        measure(context, from, to, pstl_copy_par());
     }
 }
 

@@ -29,6 +29,9 @@ NAME = test/unique-strings
 NAME = test/search-integer
 
 NAME = algorithm/all_of
+NAME = algorithm/copy
+NAME = algorithm/transform
+NAME = algorithm/parallel
 
 TESTS = \
 	test/accumulate-int-array \
@@ -62,7 +65,10 @@ ifeq ($(USE_CXX11),yes)
     CPPFLAGS += -DUSE_CXX11
 endif
 
-CPPFLAGS += -I../ParallelSTL/include
+CPPFLAGS += -I../parallel/n3554/include -fopenmp
+LDLIBS += -fopenmp
+# CPPFLAGS += -I../parallel/ParallelSTL/include
+# CPPFLAGS += -I../parallel/SyclParallelSTL/include
 
 LIBCXX   = /Users/kuehl/src/llvm/libcxx
 # LIBSTDCXX = /opt/gcc-current/include/c++/4.9.0
