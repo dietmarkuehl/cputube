@@ -12,28 +12,38 @@ namespace CE = cpu::execution;
 
 // ----------------------------------------------------------------------------
 
-static void call_transform() {
-    std::vector<int> from;
-    std::vector<int> to;
-    using iterator = std::vector<int>::iterator;
+namespace {
+    template <typename T>
+    struct expecter {
+        template <typename S> void operator=(S) const = delete;
+        void operator=(T) const {}
+    };
+    template <typename T>
+    constexpr expecter<T> expect;
+}
 
-    iterator it1 = CA::transform(from.begin(), from.end(), to.begin(),
-                                [](auto v){ return v; });
-    (void)it1;
-    iterator it2 = CA::transform(CE::seq, from.begin(), from.end(), to.begin(),
-                                 [](auto v){ return v; });
-    (void)it2;
-    iterator it3 = CA::transform(CE::par, from.begin(), from.end(), to.begin(),
-                                 [](auto v){ return v; });
-    (void)it3;
-    iterator it4 = CA::transform(CE::par_unseq, from.begin(), from.end(), to.begin(),
-                                 [](auto v){ return v; });
-    (void)it4;
+// ----------------------------------------------------------------------------
+
+template <typename R, typename F, typename... A>
+static void call(F f, A... a) {
+    expect<R> = f(a...);
+    expect<R> = f(CE::seq, a...);
+    expect<R> = f(CE::par, a...);
+    expect<R> = f(CE::par_unseq, a...);
 }
 
 // ----------------------------------------------------------------------------
 
 int main() {
-    call_transform();
+    std::vector<int> v0;
+    std::vector<int> v1;
+    using iterator = std::vector<int>::iterator;
+
+    call<bool>([](auto... a){ return CA::all_of(a...); },
+               v0.begin(), v0.end(), [](auto){ return true; });
+    call<bool>([](auto... a){ return CA::any_of(a...); },
+               v0.begin(), v0.end(), [](auto){ return true; });
+    call<iterator>([](auto... a){ return CA::transform(a...); },
+                   v0.begin(), v0.end(), v1.begin(), [](auto v){ return v; });
     std::cout << "done\n";
 }

@@ -67,6 +67,10 @@ namespace cpu {
         char const* policy_name<parallel_unsequenced_policy>() {
             return "par_unseq, ";
         }
+        template <typename F>
+        char const* policy_name(F) {
+            return policy_name<F>();
+        }
         template <typename F, typename S>
         char const* policy_name(F, S) {
             return policy_name<F>();
@@ -80,7 +84,23 @@ namespace cpu {
     namespace algorithm {
         inline
         namespace parallel {
-                   
+            // ----------------------------------------------------------------
+            using std::all_of;
+            template <typename F, typename... T>
+            bool all_of(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "all_of(" << name << "fb, fe, pred)\n";
+                return 0;
+            }
+            // ----------------------------------------------------------------
+            using std::any_of;
+            template <typename F, typename... T>
+            bool any_of(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "any_of(" << name << "fb, fe, pred)\n";
+                return 0;
+            }
+            // ----------------------------------------------------------------
             using std::transform;
             template <typename F, typename S, typename... T>
             auto transform(F f, S s, T... ) {
@@ -93,6 +113,7 @@ namespace cpu {
                     return f;
                 }
             }
+            // ----------------------------------------------------------------
         }
     }
 }
