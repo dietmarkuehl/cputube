@@ -7,6 +7,7 @@
 #define INCLUDED_CPU_ALGORITHM_PARALLEL
 
 #include <algorithm>
+#include <numeric>
 #include <execution_policy>
 #include <iostream>
 
@@ -93,6 +94,20 @@ namespace cpu {
                     return f;
                 }
             }
+            // ----------------------------------------------------------------
+            template <typename F, typename S>
+            auto get_real_value(F, S) {
+                if constexpr (cpu::execution::is_execution_policy_v<F>) {
+                    return typename S::value_type();
+                }
+                else {
+                    return typename F::value_type();
+                }
+            }
+            // ----------------------------------------------------------------
+        }
+        namespace parallel {
+            // <algorithm>
             // ----------------------------------------------------------------
             using std::all_of;
             template <typename F, typename... T>
@@ -734,6 +749,74 @@ namespace cpu {
                 char const* name = cpu::execution::policy_name(f);
                 std::cout << "lexicographical_compare(" << name << "fb, fe, sb, se)\n";
                 return true;
+            }
+            // ----------------------------------------------------------------
+        }
+        namespace parallel {
+            // <numeric>
+            // ----------------------------------------------------------------
+            //-dk:TODO using std::reduce;
+            template <typename F, typename S, typename... T>
+            auto reduce(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "reduce(" << name << "fb, fe)\n";
+                return get_real_value(f, s);
+            }
+            // ----------------------------------------------------------------
+            //-dk:TODO using std::transform_reduce;
+            template <typename F, typename S, typename... T>
+            auto transform_reduce(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "transform_reduce(" << name << "fb, fe)\n";
+                return get_real_value(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::inner_product;
+            template <typename F, typename S, typename... T>
+            auto inner_product(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "inner_product(" << name << "fb, fe, sb, init)\n";
+                return get_real_value(f, s);
+            }
+            // ----------------------------------------------------------------
+            //-dk:TODO using std::exclusive_scan;
+            template <typename F, typename S, typename... T>
+            auto exclusive_scan(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "exclusive_scan(" << name << "fb, mid fe, sb)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            //-dk:TODO using std::inclusive_scan;
+            template <typename F, typename S, typename... T>
+            auto inclusive_scan(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "inclusive_scan(" << name << "fb, mid fe, sb)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            //-dk:TODO using std::transform_exclusive_scan;
+            template <typename F, typename S, typename... T>
+            auto transform_exclusive_scan(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "transform_exclusive_scan(" << name << "fb, mid fe, sb)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            //-dk:TODO using std::transform_inclusive_scan;
+            template <typename F, typename S, typename... T>
+            auto transform_inclusive_scan(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "transform_inclusive_scan(" << name << "fb, mid fe, sb)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::adjacent_difference;
+            template <typename F, typename S, typename... T>
+            auto adjacent_difference(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "adjacent_difference(" << name << "fb, fe, sb)\n";
+                return get_real_argument(f, s);
             }
             // ----------------------------------------------------------------
         }

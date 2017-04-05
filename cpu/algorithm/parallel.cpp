@@ -287,5 +287,49 @@ int main() {
     call<bool>([](auto... a){ return CA::lexicographical_compare(a...); },
                v0.begin(), v0.end(), v1.begin(), v1.end(), [](auto, auto){ return true; });
 
+    // ------------------------------------------------------------------------
+    // <numeric>
+
+    call<int>([](auto... a){ return CA::reduce(a...); },
+              v0.begin(), v0.end());
+    call<int>([](auto... a){ return CA::reduce(a...); },
+              v0.begin(), v0.end(), 0);
+    call<int>([](auto... a){ return CA::reduce(a...); },
+              v0.begin(), v0.end(), 0, [](auto, auto){ return 0; });
+    call<int>([](auto... a){ return CA::transform_reduce(a...); },
+              v0.begin(), v0.end(), [](auto v){ return v; },
+              0, [](auto, auto){ return 0; });
+
+    call<int>([](auto... a){ return CA::inner_product(a...); },
+              v0.begin(), v0.end(), v1.begin(), 0);
+    call<int>([](auto... a){ return CA::inner_product(a...); },
+              v0.begin(), v0.end(), v1.begin(), 0,
+              [](auto, auto){ return 0; }, [](auto, auto){ return 0; });
+
+    call<iterator>([](auto...a){ return CA::exclusive_scan(a...); },
+                   v0.begin(), v0.end(), v1.begin(), 0);
+    call<iterator>([](auto...a){ return CA::exclusive_scan(a...); },
+                   v0.begin(), v0.end(), v1.begin(), 0, [](auto, auto){ return 0; });
+    call<iterator>([](auto...a){ return CA::inclusive_scan(a...); },
+                   v0.begin(), v0.end(), v1.begin());
+    call<iterator>([](auto...a){ return CA::inclusive_scan(a...); },
+                   v0.begin(), v0.end(), v1.begin(), [](auto, auto){ return 0; });
+    call<iterator>([](auto...a){ return CA::inclusive_scan(a...); },
+                   v0.begin(), v0.end(), v1.begin(), [](auto, auto){ return 0; }, 0);
+    call<iterator>([](auto...a){ return CA::transform_exclusive_scan(a...); },
+                   v0.begin(), v0.end(), v1.begin(),
+                   [](auto){ return 0; }, 0, [](auto, auto){ return 0; });
+    call<iterator>([](auto...a){ return CA::transform_inclusive_scan(a...); },
+                   v0.begin(), v0.end(), v1.begin(),
+                   [](auto){ return 0; }, [](auto, auto){ return 0; });
+    call<iterator>([](auto...a){ return CA::transform_inclusive_scan(a...); },
+                   v0.begin(), v0.end(), v1.begin(),
+                   [](auto){ return 0; }, [](auto, auto){ return 0; }, 0);
+
+    call<iterator>([](auto... a){ return CA::adjacent_difference(a...); },
+                   v0.begin(), v0.end(), v1.begin());
+    call<iterator>([](auto... a){ return CA::adjacent_difference(a...); },
+                   v0.begin(), v0.end(), v1.begin(), [](auto, auto){ return 0; });
+
     std::cout << "done\n";
 }
