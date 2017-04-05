@@ -14,6 +14,94 @@
 
 // ----------------------------------------------------------------------------
 
+namespace std {
+    void adjacent_difference();
+    void adjacent_find();
+    void all_of();
+    void any_of();
+    void copy();
+    void copy_if();
+    void copy_n();
+    void count();
+    void count_if();
+    void destroy();
+    void destroy_n();
+    void equal();
+    void exclusive_scan();
+    void fill();
+    void fill_n();
+    void find();
+    void find_end();
+    void find_first_of();
+    void find_if();
+    void find_if_not();
+    void for_each();
+    void for_each_n();
+    void generate();
+    void generate_n();
+    void includes();
+    void inclusive_scan();
+    void inner_product();
+    void inplace_merge();
+    void is_heap();
+    void is_heap_until();
+    void is_partitioned();
+    void is_sorted();
+    void is_sorted_until();
+    void lexicographical_compare();
+    void max_element();
+    void merge();
+    void min_element();
+    void minmax_element();
+    void mismatch();
+    void move();
+    void none_of();
+    void nth_element();
+    void partial_sort();
+    void partial_sort_copy();
+    void partition();
+    void partition_copy();
+    void reduce();
+    void remove();
+    void remove_copy();
+    void remove_copy_if();
+    void remove_if();
+    void replace();
+    void replace_copy();
+    void replace_copy_if();
+    void replace_if();
+    void reverse();
+    void reverse_copy();
+    void rotate();
+    void rotate_copy();
+    void search();
+    void search_n();
+    void set_difference();
+    void set_intersection();
+    void set_symmetric_difference();
+    void set_union();
+    void sort();
+    void stable_partition();
+    void stable_sort();
+    void swap_ranges();
+    void transform();
+    void transform_exclusive_scan();
+    void transform_inclusive_scan();
+    void transform_reduce();
+    void uninitialized_copy();
+    void uninitialized_copy_n();
+    void uninitialized_default_construct();
+    void uninitialized_default_construct_n();
+    void uninitialized_fill();
+    void uninitialized_fill_n();
+    void uninitialized_move();
+    void uninitialized_move_n();
+    void uninitialized_value_construct();
+    void uninitialized_value_construct_n();
+    void unique();
+    void unique_copy();
+}
+
 namespace PSTL = std;
 
 // ----------------------------------------------------------------------------
@@ -27,21 +115,13 @@ namespace cpu {
         template <typename T>
         constexpr bool is_execution_policy_v = is_execution_policy<T>::value;
 
-#if 0
-        using PSTL::sequenced_policy;
-#else
         using sequenced_policy = PSTL::sequential_execution_policy;
-#endif
         using PSTL::seq;
-#if 0
-        using PSTL::parallel_policy;
-#else
         using parallel_policy = PSTL::parallel_execution_policy;
-#endif
         using PSTL::par;
 #if 0
+        using parallel_unsequence_policy = PSTL::parallel_unsequenced_policy;
         using PSTL::par_unseq;
-        using PSTL::parallel_unsequenced_policy;
 #else
         class parallel_unsequenced_policy {
         };
@@ -141,7 +221,7 @@ namespace cpu {
                 std::cout << "for_each(" << name << "fb, fe, fun)\n";
             }
             // ----------------------------------------------------------------
-            //-dk:TODO using std::for_each_n;
+            using std::for_each_n;
             template <typename F, typename S, typename... T>
             auto for_each_n(F f, S s, T...) {
                 char const* name = cpu::execution::policy_name(f, s);
@@ -248,7 +328,7 @@ namespace cpu {
                 return std::ptrdiff_t();
             }
             // ----------------------------------------------------------------
-            //-dk:TODO using std::mismatch;
+            // using std::mismatch;
             template <typename F, typename S, typename T, typename... U>
             auto mismatch(F f, S s, T t, U...) {
                 char const* name = cpu::execution::policy_name(f, s, t);
@@ -756,7 +836,7 @@ namespace cpu {
         namespace parallel {
             // <numeric>
             // ----------------------------------------------------------------
-            //-dk:TODO using std::reduce;
+            using std::reduce;
             template <typename F, typename S, typename... T>
             auto reduce(F f, S s, T...) {
                 char const* name = cpu::execution::policy_name(f);
@@ -764,7 +844,7 @@ namespace cpu {
                 return get_real_value(f, s);
             }
             // ----------------------------------------------------------------
-            //-dk:TODO using std::transform_reduce;
+            using std::transform_reduce;
             template <typename F, typename S, typename... T>
             auto transform_reduce(F f, S s, T...) {
                 char const* name = cpu::execution::policy_name(f);
@@ -780,7 +860,7 @@ namespace cpu {
                 return get_real_value(f, s);
             }
             // ----------------------------------------------------------------
-            //-dk:TODO using std::exclusive_scan;
+            using std::exclusive_scan;
             template <typename F, typename S, typename... T>
             auto exclusive_scan(F f, S s, T...) {
                 char const* name = cpu::execution::policy_name(f);
@@ -788,7 +868,7 @@ namespace cpu {
                 return get_real_argument(f, s);
             }
             // ----------------------------------------------------------------
-            //-dk:TODO using std::inclusive_scan;
+            using std::inclusive_scan;
             template <typename F, typename S, typename... T>
             auto inclusive_scan(F f, S s, T...) {
                 char const* name = cpu::execution::policy_name(f);
@@ -796,7 +876,7 @@ namespace cpu {
                 return get_real_argument(f, s);
             }
             // ----------------------------------------------------------------
-            //-dk:TODO using std::transform_exclusive_scan;
+            using std::transform_exclusive_scan;
             template <typename F, typename S, typename... T>
             auto transform_exclusive_scan(F f, S s, T...) {
                 char const* name = cpu::execution::policy_name(f);
@@ -804,7 +884,7 @@ namespace cpu {
                 return get_real_argument(f, s);
             }
             // ----------------------------------------------------------------
-            //-dk:TODO using std::transform_inclusive_scan;
+            using std::transform_inclusive_scan;
             template <typename F, typename S, typename... T>
             auto transform_inclusive_scan(F f, S s, T...) {
                 char const* name = cpu::execution::policy_name(f);
