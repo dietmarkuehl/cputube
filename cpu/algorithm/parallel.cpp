@@ -330,6 +330,32 @@ int main() {
                    v0.begin(), v0.end(), v1.begin());
     call<iterator>([](auto... a){ return CA::adjacent_difference(a...); },
                    v0.begin(), v0.end(), v1.begin(), [](auto, auto){ return 0; });
+    // ------------------------------------------------------------------------
+    // <memory>
+    call<void>([](auto... a){ return CA::uninitialized_default_construct(a...); },
+               v0.begin(), v0.begin());
+    call<void>([](auto... a){ return CA::uninitialized_default_construct_n(a...); },
+               v0.begin(), 0);
+    call<void>([](auto... a){ return CA::uninitialized_value_construct(a...); },
+               v0.begin(), v0.begin());
+    call<void>([](auto... a){ return CA::uninitialized_value_construct_n(a...); },
+               v0.begin(), 0);
+    call<void>([](auto... a){ return CA::uninitialized_copy(a...); },
+               v0.begin(), v0.begin(), v1.begin());
+    call<void>([](auto... a){ return CA::uninitialized_copy_n(a...); },
+               v0.begin(), 0, v1.begin());
+    call<void>([](auto... a){ return CA::uninitialized_move(a...); },
+               v0.begin(), v0.begin(), v1.begin());
+    call<void>([](auto... a){ return CA::uninitialized_move_n(a...); },
+               v0.begin(), 0, v1.begin());
+    call<void>([](auto... a){ return CA::uninitialized_fill(a...); },
+               v0.begin(), v0.begin(), 0);
+    call<void>([](auto... a){ return CA::uninitialized_fill_n(a...); },
+               v0.begin(), 0, 0);
+    call<void>([](auto... a){ return CA::destroy(a...); },
+               v0.begin(), v0.begin());
+    call<void>([](auto... a){ return CA::destroy_n(a...); },
+               v0.begin(), 0);
 
     std::cout << "done\n";
 }

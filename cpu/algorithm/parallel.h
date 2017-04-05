@@ -7,9 +7,10 @@
 #define INCLUDED_CPU_ALGORITHM_PARALLEL
 
 #include <algorithm>
-#include <numeric>
 #include <execution_policy>
 #include <iostream>
+#include <memory>
+#include <numeric>
 
 // ----------------------------------------------------------------------------
 
@@ -817,6 +818,94 @@ namespace cpu {
                 char const* name = cpu::execution::policy_name(f);
                 std::cout << "adjacent_difference(" << name << "fb, fe, sb)\n";
                 return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+        }
+        namespace parallel {
+            // <memory>
+            // ----------------------------------------------------------------
+            using std::uninitialized_default_construct;
+            template <typename F, typename... T>
+            void uninitialized_default_construct(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "uninitialized_default_construct(" << name << "fb, fe)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::uninitialized_default_construct_n;
+            template <typename F, typename... T>
+            void uninitialized_default_construct_n(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "uninitialized_default_construct_n(" << name << "fb, n)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::uninitialized_value_construct;
+            template <typename F, typename... T>
+            void uninitialized_value_construct(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "uninitialized_value_construct(" << name << "fb, fe)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::uninitialized_value_construct_n;
+            template <typename F, typename... T>
+            void uninitialized_value_construct_n(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "uninitialized_value_construct_n(" << name << "fb, n)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::uninitialized_copy;
+            template <typename F, typename... T>
+            void uninitialized_copy(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "uninitialized_copy(" << name << "fb, fe, sb)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::uninitialized_copy_n;
+            template <typename F, typename... T>
+            void uninitialized_copy_n(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "uninitialized_copy_n(" << name << "fb, n, sb)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::uninitialized_move;
+            template <typename F, typename... T>
+            void uninitialized_move(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "uninitialized_move(" << name << "fb, fe, sb)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::uninitialized_move_n;
+            template <typename F, typename... T>
+            void uninitialized_move_n(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "uninitialized_move_n(" << name << "fb, n, sb)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::uninitialized_fill;
+            template <typename F, typename... T>
+            void uninitialized_fill(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "uninitialized_fill(" << name << "fb, fe, v)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::uninitialized_fill_n;
+            template <typename F, typename... T>
+            void uninitialized_fill_n(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "uninitialized_fill_n(" << name << "fb, n, v)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::destroy;
+            template <typename F, typename... T>
+            void destroy(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "destroy(" << name << "fb, fe)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::destroy_n;
+            template <typename F, typename... T>
+            void destroy_n(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "destroy_n(" << name << "fb, n)\n";
             }
             // ----------------------------------------------------------------
         }
