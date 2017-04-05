@@ -81,6 +81,19 @@ namespace cpu {
         inline
         namespace parallel {
             // ----------------------------------------------------------------
+            // utility to make determination of the correct result easier
+            template <typename F, typename S>
+            auto get_real_argument(F f, S s) {
+                if constexpr (cpu::execution::is_execution_policy_v<F>) {
+                    (void)f;
+                    return s;
+                }
+                else {
+                    (void)s;
+                    return f;
+                }
+            }
+            // ----------------------------------------------------------------
             using std::all_of;
             template <typename F, typename... T>
             bool all_of(F f, T...) {
@@ -505,18 +518,222 @@ namespace cpu {
             // ----------------------------------------------------------------
             using std::reverse;
             template <typename F, typename... T>
-            bool reverse(F f, T...) {
+            void reverse(F f, T...) {
                 char const* name = cpu::execution::policy_name(f);
                 std::cout << "reverse(" << name << "fb, fe)\n";
-                return 0;
             }
             // ----------------------------------------------------------------
             using std::reverse_copy;
-            template <typename F, typename... T>
-            bool reverse_copy(F f, T...) {
+            template <typename F, typename S, typename... T>
+            auto reverse_copy(F f, S s, T...) {
                 char const* name = cpu::execution::policy_name(f);
                 std::cout << "reverse_copy(" << name << "fb, fe, sb)\n";
-                return 0;
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::rotate;
+            template <typename F, typename S, typename... T>
+            auto rotate(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "rotate(" << name << "fb, mid, fe)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::rotate_copy;
+            template <typename F, typename S, typename... T>
+            auto rotate_copy(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "rotate_copy(" << name << "fb, mid, fe, sb)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::is_partitioned;
+            template <typename F, typename... T>
+            bool is_partitioned(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "is_partitioned(" << name << "fb, fe, pred)\n";
+                return false;
+            }
+            // ----------------------------------------------------------------
+            using std::partition;
+            template <typename F, typename S, typename... T>
+            auto partition(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "partition(" << name << "fb, fe, pred)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::stable_partition;
+            template <typename F, typename S, typename... T>
+            auto stable_partition(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "stable_partition(" << name << "fb, fe, pred)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::partition_copy;
+            template <typename F, typename S, typename... T>
+            auto partition_copy(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "partition_copy(" << name << "fb, fe, sb, tb, pred)\n";
+                auto r = get_real_argument(f, s);
+                return std::make_pair(r, r);
+            }
+            // ----------------------------------------------------------------
+            using std::sort;
+            template <typename F, typename... T>
+            void sort(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "sort(" << name << "fb, fe)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::stable_sort;
+            template <typename F, typename... T>
+            void stable_sort(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "stable_sort(" << name << "fb, fe)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::partial_sort;
+            template <typename F, typename... T>
+            void partial_sort(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "partial_sort(" << name << "fb, fe)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::partial_sort_copy;
+            template <typename F, typename S,typename... T>
+            auto partial_sort_copy(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "partial_sort_copy(" << name << "fb, fe, rb, re)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::is_sorted;
+            template <typename F, typename... T>
+            bool is_sorted(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "is_sorted(" << name << "fb, fe)\n";
+                return true;
+            }
+            // ----------------------------------------------------------------
+            using std::is_sorted_until;
+            template <typename F, typename S, typename... T>
+            auto is_sorted_until(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "is_sorted_until(" << name << "fb, fe)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::nth_element;
+            template <typename F, typename... T>
+            void nth_element(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "nth_element(" << name << "fb, mid, fe)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::merge;
+            template <typename F, typename S, typename... T>
+            auto merge(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "merge(" << name << "fb, fe, sb, se, tb)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::inplace_merge;
+            template <typename F, typename... T>
+            void inplace_merge(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "inplace_merge(" << name << "fb, fe, sb, se)\n";
+            }
+            // ----------------------------------------------------------------
+            using std::includes;
+            template <typename F, typename... T>
+            bool includes(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "includes(" << name << "fb, fe, sb, se)\n";
+                return true;
+            }
+            // ----------------------------------------------------------------
+            using std::set_union;
+            template <typename F, typename S, typename... T>
+            auto set_union(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "set_union(" << name << "fb, fe, sb, se)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::set_intersection;
+            template <typename F, typename S, typename... T>
+            auto set_intersection(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "set_intersection(" << name << "fb, fe, sb, se)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::set_difference;
+            template <typename F, typename S, typename... T>
+            auto set_difference(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "set_difference(" << name << "fb, fe, sb, se)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::set_symmetric_difference;
+            template <typename F, typename S, typename... T>
+            auto set_symmetric_difference(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "set_symmetric_difference(" << name << "fb, fe, sb, se)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::is_heap;
+            template <typename F, typename... T>
+            bool is_heap(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "is_heap(" << name << "fb, fe)\n";
+                return true;
+            }
+            // ----------------------------------------------------------------
+            using std::is_heap_until;
+            template <typename F, typename S, typename... T>
+            auto is_heap_until(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "is_heap_until(" << name << "fb, fe)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::min_element;
+            template <typename F, typename S, typename... T>
+            auto min_element(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "min_element(" << name << "fb, fe)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::max_element;
+            template <typename F, typename S, typename... T>
+            auto max_element(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "max_element(" << name << "fb, fe)\n";
+                return get_real_argument(f, s);
+            }
+            // ----------------------------------------------------------------
+            using std::minmax_element;
+            template <typename F, typename S, typename... T>
+            auto minmax_element(F f, S s, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "minmax_element(" << name << "fb, fe)\n";
+                auto r = get_real_argument(f, s);
+                return std::make_pair(r, r);
+            }
+            // ----------------------------------------------------------------
+            using std::lexicographical_compare;
+            template <typename F, typename... T>
+            bool lexicographical_compare(F f, T...) {
+                char const* name = cpu::execution::policy_name(f);
+                std::cout << "lexicographical_compare(" << name << "fb, fe, sb, se)\n";
+                return true;
             }
             // ----------------------------------------------------------------
         }

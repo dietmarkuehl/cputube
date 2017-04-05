@@ -49,7 +49,6 @@ int main() {
     std::vector<int> v2;
     using iterator = std::vector<int>::iterator;
 
-#if 0
     call<bool>([](auto... a){ return CA::all_of(a...); },
                v0.begin(), v0.end(), [](auto){ return true; });
     call<bool>([](auto... a){ return CA::any_of(a...); },
@@ -172,12 +171,121 @@ int main() {
                    v0.begin(), v0.end(), v1.begin());
     call<iterator>([](auto... a){ return CA::unique_copy(a...); },
                    v0.begin(), v0.end(), v1.begin(), [](auto, auto){ return true; });
-#endif
 
     call<void>([](auto... a){ return CA::reverse(a...); },
-               v0.begin(), v0.end());
-    call<void>([](auto... a){ return CA::reverse_copy(a...); },
+                   v0.begin(), v0.end());
+    call<iterator>([](auto... a){ return CA::reverse_copy(a...); },
                v0.begin(), v0.end(), v1.begin());
+
+    call<iterator>([](auto... a){ return CA::rotate(a...); },
+                   v0.begin(), v0.begin(), v0.end());
+    call<iterator>([](auto... a){ return CA::rotate_copy(a...); },
+                   v0.begin(), v0.begin(), v0.end(), v1.begin());
+
+    call<bool>([](auto... a){ return CA::is_partitioned(a...); },
+               v0.begin(), v0.begin(), [](auto){ return true; });
+    call<iterator>([](auto... a){ return CA::partition(a...); },
+                   v0.begin(), v0.end(), [](auto){ return true; });
+    call<iterator>([](auto... a){ return CA::stable_partition(a...); },
+                   v0.begin(), v0.end(), [](auto){ return true; });
+    call<std::pair<iterator, iterator>>([](auto... a){ return CA::partition_copy(a...); },
+                                        v0.begin(), v0.end(), v1.begin(), v2.begin(),
+                                        [](auto){ return true; });
+
+    call<void>([](auto... a){ return CA::sort(a...); },
+               v0.begin(), v0.end());
+    call<void>([](auto... a){ return CA::sort(a...); },
+               v0.begin(), v0.end(), [](auto, auto){ return true; });
+    call<void>([](auto... a){ return CA::stable_sort(a...); },
+               v0.begin(), v0.end());
+    call<void>([](auto... a){ return CA::stable_sort(a...); },
+               v0.begin(), v0.end(), [](auto, auto){ return true; });
+    call<void>([](auto... a){ return CA::partial_sort(a...); },
+               v0.begin(), v0.begin(), v0.end());
+    call<void>([](auto... a){ return CA::partial_sort(a...); },
+               v0.begin(), v0.begin(), v0.end(), [](auto, auto){ return true; });
+    call<iterator>([](auto... a){ return CA::partial_sort_copy(a...); },
+                   v0.begin(), v0.begin(), v1.begin(), v2.begin());
+    call<iterator>([](auto... a){ return CA::partial_sort_copy(a...); },
+                   v0.begin(), v0.begin(), v1.begin(), v2.begin(),
+                   [](auto, auto){ return true; });
+    call<bool>([](auto... a){ return CA::is_sorted(a...); },
+               v0.begin(), v0.begin());
+    call<bool>([](auto... a){ return CA::is_sorted(a...); },
+               v0.begin(), v0.begin(), [](auto, auto){ return true; });
+    call<iterator>([](auto... a){ return CA::is_sorted_until(a...); },
+               v0.begin(), v0.begin());
+    call<iterator>([](auto... a){ return CA::is_sorted_until(a...); },
+               v0.begin(), v0.begin(), [](auto, auto){ return true; });
+
+    call<void>([](auto... a){ return CA::nth_element(a...); },
+               v0.begin(), v0.begin(), v0.end());
+    call<void>([](auto... a){ return CA::nth_element(a...); },
+               v0.begin(), v0.begin(), v0.end(), [](auto, auto){ return true; });
+
+    call<iterator>([](auto... a){ return CA::merge(a...); },
+                   v0.begin(), v0.end(), v1.begin(), v1.end(),
+                   v2.begin());
+    call<iterator>([](auto... a){ return CA::merge(a...); },
+                   v0.begin(), v0.end(), v1.begin(), v1.end(),
+                   v2.begin(), [](auto, auto){ return true; });
+
+    call<void>([](auto... a){ return CA::inplace_merge(a...); },
+               v0.begin(), v0.begin(), v0.end());
+    call<void>([](auto... a){ return CA::inplace_merge(a...); },
+               v0.begin(), v0.begin(), v0.end(), [](auto, auto){ return true; });
+
+    call<bool>([](auto... a){ return CA::includes(a...); },
+               v0.begin(), v0.end(), v1.begin(), v1.end());
+    call<bool>([](auto... a){ return CA::includes(a...); },
+               v0.begin(), v0.end(), v1.begin(), v1.end(), [](auto, auto){ return true; });
+    call<iterator>([](auto... a){ return CA::set_union(a...); },
+                   v0.begin(), v0.end(), v1.begin(), v1.end(), v2.begin());
+    call<iterator>([](auto... a){ return CA::set_union(a...); },
+                   v0.begin(), v0.end(), v1.begin(), v1.end(), v2.begin(),
+                   [](auto, auto){ return true; });
+    call<iterator>([](auto... a){ return CA::set_intersection(a...); },
+                   v0.begin(), v0.end(), v1.begin(), v1.end(), v2.begin());
+    call<iterator>([](auto... a){ return CA::set_intersection(a...); },
+                   v0.begin(), v0.end(), v1.begin(), v1.end(), v2.begin(),
+                   [](auto, auto){ return true; });
+    call<iterator>([](auto... a){ return CA::set_difference(a...); },
+                   v0.begin(), v0.end(), v1.begin(), v1.end(), v2.begin());
+    call<iterator>([](auto... a){ return CA::set_difference(a...); },
+                   v0.begin(), v0.end(), v1.begin(), v1.end(), v2.begin(),
+                   [](auto, auto){ return true; });
+    call<iterator>([](auto... a){ return CA::set_symmetric_difference(a...); },
+                   v0.begin(), v0.end(), v1.begin(), v1.end(), v2.begin());
+    call<iterator>([](auto... a){ return CA::set_symmetric_difference(a...); },
+                   v0.begin(), v0.end(), v1.begin(), v1.end(), v2.begin(),
+                   [](auto, auto){ return true; });
+
+    call<bool>([](auto... a){ return CA::is_heap(a...); },
+               v0.begin(), v0.end());
+    call<bool>([](auto... a){ return CA::is_heap(a...); },
+               v0.begin(), v0.end(), [](auto, auto){ return true; });
+    call<iterator>([](auto... a){ return CA::is_heap_until(a...); },
+               v0.begin(), v0.end());
+    call<iterator>([](auto... a){ return CA::is_heap_until(a...); },
+               v0.begin(), v0.end(), [](auto, auto){ return true; });
+
+    call<iterator>([](auto... a){ return CA::min_element(a...); },
+               v0.begin(), v0.end());
+    call<iterator>([](auto... a){ return CA::min_element(a...); },
+               v0.begin(), v0.end(), [](auto, auto){ return true; });
+    call<iterator>([](auto... a){ return CA::max_element(a...); },
+               v0.begin(), v0.end());
+    call<iterator>([](auto... a){ return CA::max_element(a...); },
+               v0.begin(), v0.end(), [](auto, auto){ return true; });
+    call<std::pair<iterator, iterator>>([](auto... a){ return CA::minmax_element(a...); },
+                                        v0.begin(), v0.end());
+    call<std::pair<iterator, iterator>>([](auto... a){ return CA::minmax_element(a...); },
+                                        v0.begin(), v0.end(), [](auto, auto){ return true; });
+
+    call<bool>([](auto... a){ return CA::lexicographical_compare(a...); },
+               v0.begin(), v0.end(), v1.begin(), v1.end());
+    call<bool>([](auto... a){ return CA::lexicographical_compare(a...); },
+               v0.begin(), v0.end(), v1.begin(), v1.end(), [](auto, auto){ return true; });
 
     std::cout << "done\n";
 }
