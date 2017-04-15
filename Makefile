@@ -32,6 +32,7 @@ NAME = algorithm/all_of
 NAME = algorithm/copy
 NAME = algorithm/transform
 NAME = algorithm/parallel
+NAME = algorithm/for_each
 
 TESTS = \
 	test/accumulate-int-array \
@@ -49,7 +50,7 @@ TESTS = \
 #  ----------------------------------------------------------------------------
 
 COMPILER  = gcc
-GXX       = /opt/gcc-current/bin/g++
+GXX       = /opt/gcc-6.3.0/bin/g++
 CLANGXX   = clang++
 AR        = ar
 ARFLAGS   = rcu
@@ -69,6 +70,11 @@ CPPFLAGS += -I../parallel/n3554/include -fopenmp
 LDLIBS += -fopenmp
 # CPPFLAGS += -I../parallel/ParallelSTL/include
 # CPPFLAGS += -I../parallel/SyclParallelSTL/include
+
+KUHLHOME = ../kuhllib
+CPPFLAGS += -I$(KUHLHOME)/src
+LDFLAGS  += -L$(KUHLHOME)/build-gcc/nstd/execution
+LDLIBS   += -lnstd-execution
 
 LIBCXX   = /Users/kuehl/src/llvm/libcxx
 # LIBSTDCXX = /opt/gcc-current/include/c++/4.9.0

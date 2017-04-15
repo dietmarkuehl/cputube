@@ -5,8 +5,11 @@
 
 #include <cpu/algorithm/parallel.h>
 #include <algorithm>
+#include <deque>
 #include <iostream>
+#include <list>
 #include <type_traits>
+#include <vector>
 
 namespace CA = cpu::algorithm;
 namespace CE = cpu::execution;
@@ -25,6 +28,50 @@ namespace {
 
 // ----------------------------------------------------------------------------
 
+namespace {
+    template <typename Iterator>
+    constexpr bool is_input_iterator_v =
+        std::is_same_v<std::input_iterator_tag,
+                       typename std::iterator_traits<std::decay_t<Iterator>>::iterator_category>;
+    template <typename Iterator>
+    constexpr bool is_output_iterator_v =
+        std::is_same_v<std::output_iterator_tag,
+                       typename std::iterator_traits<std::decay_t<Iterator>>::iterator_category>;
+    template <typename Iterator>
+    constexpr bool is_forward_iterator_v =
+        std::is_same_v<std::forward_iterator_tag,
+                       typename std::iterator_traits<std::decay_t<Iterator>>::iterator_category>;
+    template <typename Iterator>
+    constexpr bool is_bidirectional_iterator_v =
+        std::is_same_v<std::bidirectional_iterator_tag,
+                       typename std::iterator_traits<std::decay_t<Iterator>>::iterator_category>;
+    template <typename Iterator>
+    constexpr bool is_random_access_iterator_v =
+        std::is_same_v<std::random_access_iterator_tag,
+                       typename std::iterator_traits<std::decay_t<Iterator>>::iterator_category>;
+}
+
+// ----------------------------------------------------------------------------
+
+namespace {
+    template <typename... T>
+    void use(T&&...) {
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+template <typename R, typename F, typename... A>
+auto execute(R*, R*, F f, A... a) -> decltype(f(a...)) {
+    return f(a...);
+}
+
+template <typename R, typename F, typename... A>
+auto execute(R*, void*, F f, A... a) -> R {
+    R rc{};
+    return rc;
+}
+
 template <typename R, typename F, typename... A>
 static void call(F f, A... a) {
     if constexpr (std::is_void_v<R>) {
@@ -34,23 +81,25 @@ static void call(F f, A... a) {
         f(CE::par_unseq, a...);
     }
     else {
-        expect<R> = f(a...);
-        expect<R> = f(CE::seq, a...);
-        expect<R> = f(CE::par, a...);
-        expect<R> = f(CE::par_unseq, a...);
+        expect<R> = execute(static_cast<R*>(0), static_cast<R*>(0), f, a...);
+        expect<R> = execute(static_cast<R*>(0), static_cast<R*>(0), f, CE::seq, a...);
+        expect<R> = execute(static_cast<R*>(0), static_cast<R*>(0), f, CE::par, a...);
+        expect<R> = execute(static_cast<R*>(0), static_cast<R*>(0), f, CE::par_unseq, a...);
     }
 }
 
 // ----------------------------------------------------------------------------
 
-int main() {
-    std::vector<int> v0;
-    std::vector<int> v1;
-    std::vector<int> v2;
-    using iterator = std::vector<int>::iterator;
+template <typename C0, typename C1, typename C2>
+void test(C0&& v0, C1&& v1, C2&& v2) {
+    using iterator = typename std::decay_t<C0>::iterator;
+    use(v0, v1, v2);
 
-    call<bool>([](auto... a){ return CA::all_of(a...); },
-               v0.begin(), v0.end(), [](auto){ return true; });
+    if constexpr (is_random_access_iterator_v<iterator>) {
+        call<bool>([](auto... a){ return CA::all_of(a...); },
+                   v0.begin(), v0.end(), [](auto){ return true; });
+    }
+#if 0
     call<bool>([](auto... a){ return CA::any_of(a...); },
                v0.begin(), v0.end(), [](auto){ return true; });
     call<bool>([](auto... a){ return CA::none_of(a...); },
@@ -192,23 +241,26 @@ int main() {
                                         v0.begin(), v0.end(), v1.begin(), v2.begin(),
                                         [](auto){ return true; });
 
-    call<void>([](auto... a){ return CA::sort(a...); },
-               v0.begin(), v0.end());
-    call<void>([](auto... a){ return CA::sort(a...); },
-               v0.begin(), v0.end(), [](auto, auto){ return true; });
-    call<void>([](auto... a){ return CA::stable_sort(a...); },
-               v0.begin(), v0.end());
-    call<void>([](auto... a){ return CA::stable_sort(a...); },
-               v0.begin(), v0.end(), [](auto, auto){ return true; });
-    call<void>([](auto... a){ return CA::partial_sort(a...); },
-               v0.begin(), v0.begin(), v0.end());
-    call<void>([](auto... a){ return CA::partial_sort(a...); },
-               v0.begin(), v0.begin(), v0.end(), [](auto, auto){ return true; });
-    call<iterator>([](auto... a){ return CA::partial_sort_copy(a...); },
-                   v0.begin(), v0.begin(), v1.begin(), v2.begin());
-    call<iterator>([](auto... a){ return CA::partial_sort_copy(a...); },
-                   v0.begin(), v0.begin(), v1.begin(), v2.begin(),
-                   [](auto, auto){ return true; });
+    if constexpr (std::is_same_v<std::random_access_iterator_tag,
+                                 typename std::iterator_traits<iterator>::iterator_category>) {
+        call<void>([](auto... a){ return CA::sort(a...); },
+                   v0.begin(), v0.end());
+        call<void>([](auto... a){ return CA::sort(a...); },
+                   v0.begin(), v0.end(), [](auto, auto){ return true; });
+        call<void>([](auto... a){ return CA::stable_sort(a...); },
+                   v0.begin(), v0.end());
+        call<void>([](auto... a){ return CA::stable_sort(a...); },
+                   v0.begin(), v0.end(), [](auto, auto){ return true; });
+        call<void>([](auto... a){ return CA::partial_sort(a...); },
+                   v0.begin(), v0.begin(), v0.end());
+        call<void>([](auto... a){ return CA::partial_sort(a...); },
+                   v0.begin(), v0.begin(), v0.end(), [](auto, auto){ return true; });
+        call<iterator>([](auto... a){ return CA::partial_sort_copy(a...); },
+                       v0.begin(), v0.begin(), v1.begin(), v2.begin());
+        call<iterator>([](auto... a){ return CA::partial_sort_copy(a...); },
+                       v0.begin(), v0.begin(), v1.begin(), v2.begin(),
+                       [](auto, auto){ return true; });
+    }
     call<bool>([](auto... a){ return CA::is_sorted(a...); },
                v0.begin(), v0.begin());
     call<bool>([](auto... a){ return CA::is_sorted(a...); },
@@ -218,10 +270,13 @@ int main() {
     call<iterator>([](auto... a){ return CA::is_sorted_until(a...); },
                v0.begin(), v0.begin(), [](auto, auto){ return true; });
 
-    call<void>([](auto... a){ return CA::nth_element(a...); },
-               v0.begin(), v0.begin(), v0.end());
-    call<void>([](auto... a){ return CA::nth_element(a...); },
-               v0.begin(), v0.begin(), v0.end(), [](auto, auto){ return true; });
+    if constexpr (std::is_same_v<std::random_access_iterator_tag,
+                                 typename std::iterator_traits<iterator>::iterator_category>) {
+        call<void>([](auto... a){ return CA::nth_element(a...); },
+                   v0.begin(), v0.begin(), v0.end());
+        call<void>([](auto... a){ return CA::nth_element(a...); },
+                   v0.begin(), v0.begin(), v0.end(), [](auto, auto){ return true; });
+    }
 
     call<iterator>([](auto... a){ return CA::merge(a...); },
                    v0.begin(), v0.end(), v1.begin(), v1.end(),
@@ -260,14 +315,17 @@ int main() {
                    v0.begin(), v0.end(), v1.begin(), v1.end(), v2.begin(),
                    [](auto, auto){ return true; });
 
-    call<bool>([](auto... a){ return CA::is_heap(a...); },
-               v0.begin(), v0.end());
-    call<bool>([](auto... a){ return CA::is_heap(a...); },
+    if constexpr (std::is_same_v<std::random_access_iterator_tag,
+                                 typename std::iterator_traits<iterator>::iterator_category>) {
+        call<bool>([](auto... a){ return CA::is_heap(a...); },
+                   v0.begin(), v0.end());
+        call<bool>([](auto... a){ return CA::is_heap(a...); },
+                   v0.begin(), v0.end(), [](auto, auto){ return true; });
+        call<iterator>([](auto... a){ return CA::is_heap_until(a...); },
+                       v0.begin(), v0.end());
+        call<iterator>([](auto... a){ return CA::is_heap_until(a...); },
                v0.begin(), v0.end(), [](auto, auto){ return true; });
-    call<iterator>([](auto... a){ return CA::is_heap_until(a...); },
-               v0.begin(), v0.end());
-    call<iterator>([](auto... a){ return CA::is_heap_until(a...); },
-               v0.begin(), v0.end(), [](auto, auto){ return true; });
+    }
 
     call<iterator>([](auto... a){ return CA::min_element(a...); },
                v0.begin(), v0.end());
@@ -356,6 +414,23 @@ int main() {
                v0.begin(), v0.begin());
     call<void>([](auto... a){ return CA::destroy_n(a...); },
                v0.begin(), 0);
+#endif
+}
+
+// ----------------------------------------------------------------------------
+
+int main() {
+    std::cout << "std::vector<int>\n";
+    test(std::vector<int>(), std::vector<int>(), std::vector<int>());
+    std::cout << "-----\n";
+
+    std::cout << "std::deque<int>\n";
+    test(std::deque<int>(), std::deque<int>(), std::deque<int>());
+    std::cout << "-----\n";
+
+    std::cout << "std::list<int>\n";
+    test(std::list<int>(), std::list<int>(), std::list<int>());
+    std::cout << "-----\n";
 
     std::cout << "done\n";
 }
