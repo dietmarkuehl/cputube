@@ -7,15 +7,18 @@
 
 #include <algorithm>
 #include <numeric>
+#include <complex>
 #if 0
 #include "experimental/algorithm"
 #include "experimental/execution_policy"
-#else
+#elif 0
 #include "algorithm"
 #include "execution_policy"
+#define HAS_PSTL 1
 #endif
 #include "nstd/execution/execution.hpp"
 #include "nstd/algorithm/for_each.hpp"
+#include "tbb/parallel_for_each.h"
 
 #include <iomanip>
 #include <iostream>
@@ -38,6 +41,7 @@ namespace
             std::for_each(begin, end, fun);
         }
     };
+#ifdef HAS_PSTL
     struct pstl_for_each_seq
     {
         static char const* name() { return "PSTL::for_each(PSTL::seq)"; }
@@ -54,6 +58,7 @@ namespace
             PSTL::for_each(PSTL::par, begin, end, fun);
         }
     };
+#endif
     struct nstd_for_each_seq
     {
         static char const* name() { return "nstd::for_each(nstd::seq)"; }
@@ -68,6 +73,14 @@ namespace
         template <typename InIt, typename Fun>
         void operator()(InIt begin, InIt end, Fun fun) const {
             nstd::algorithm::for_each(nstd::execution::par, begin, end, fun);
+        }
+    };
+    struct tbb_for_each
+    {
+        static char const* name() { return "tbb::parallel_for_each()"; }
+        template <typename InIt, typename Fun>
+        void operator()(InIt begin, InIt end, Fun fun) const {
+            tbb::parallel_for_each(begin, end, fun);
         }
     };
 }
@@ -92,19 +105,39 @@ namespace
         context.report(out.str(), time, "<none>");
     }
 
-    void run_tests(cpu::tube::context& context, int size) {
+    template <typename Fun>
+    void run_tests(cpu::tube::context& context, int size, Fun fun) {
         std::vector<int> from;
         int value(0);
         std::generate_n(std::back_inserter(from), size,
                         [value]() mutable { return ++value; });
-        auto fun = [](int& value){ value *= 17; };
 
         measure(context, from, fun, std_for_each());
         measure(context, from, fun, std_for_each());
+#ifdef HAS_PSTL
         measure(context, from, fun, pstl_for_each_seq());
         measure(context, from, fun, pstl_for_each_par());
+#endif
         measure(context, from, fun, nstd_for_each_seq());
         measure(context, from, fun, nstd_for_each_par());
+        measure(context, from, fun, tbb_for_each());
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+template <typename Fun>
+void run(cpu::tube::context& context, int size, Fun fun) {
+    if (size) {
+        run_tests(context, size, fun);
+    }
+    else {
+        int offset(10000);
+        for (int i(10); i <= 10000; i *= 10) {
+            for (int j(1); j < 10; j *= 2) {
+                run_tests(context, offset * i * j, fun);
+            }
+        }
     }
 }
 
@@ -114,15 +147,15 @@ int main(int ac, char* av[])
 {
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
     int size(ac == 1? 0: atoi(av[1]));
-    if (size) {
-        run_tests(context, size);
-    }
-    else {
-        int offset(10000);
-        for (int i(10); i <= 10000; i *= 10) {
-            for (int j(1); j < 10; j *= 2) {
-                run_tests(context, offset * i * j);
-            }
+    // auto fun = [](int& value){ value *= 17; };
+    auto fun = [=](int& value){
+        constexpr int max(2000);
+        std::complex<double> p(2.5 * value / size - 0.5, 0.001);
+        int count(0);
+        for (std::complex<double> v(p); norm(v) < 4.0 && count != max; ++count) {
+            v = v * v - p;
         }
-    }
+        value = count;
+    };
+    run(context, size, fun);
 }

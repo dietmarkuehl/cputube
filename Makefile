@@ -33,6 +33,7 @@ NAME = algorithm/copy
 NAME = algorithm/transform
 NAME = algorithm/parallel
 NAME = algorithm/for_each
+NAME = algorithm/sort
 
 TESTS = \
 	test/accumulate-int-array \
@@ -66,15 +67,19 @@ ifeq ($(USE_CXX11),yes)
     CPPFLAGS += -DUSE_CXX11
 endif
 
-CPPFLAGS += -I../parallel/n3554/include -fopenmp
-LDLIBS += -fopenmp
+# CPPFLAGS += -I../parallel/n3554/include -fopenmp
+# LDLIBS += -fopenmp
 # CPPFLAGS += -I../parallel/ParallelSTL/include
 # CPPFLAGS += -I../parallel/SyclParallelSTL/include
 
 KUHLHOME = ../kuhllib
 CPPFLAGS += -I$(KUHLHOME)/src
-LDFLAGS  += -L$(KUHLHOME)/build-gcc/nstd/execution
 LDLIBS   += -lnstd-execution
+
+TBBHOME = ../parallel/tbb-2017_U5
+TBBHOME = /Users/kuehl/src/parallel/tbb-2017_U5
+CPPFLAGS += -I$(TBBHOME)/include
+LDLIBS   += -ltbb
 
 LIBCXX   = /Users/kuehl/src/llvm/libcxx
 # LIBSTDCXX = /opt/gcc-current/include/c++/4.9.0
@@ -87,6 +92,7 @@ ifeq ($(COMPILER),gcc)
     xLTOFLAGS = -flto
     LOPTFLAGS += -O3
     xLOPTFLAGS += -fno-tree-vectorize
+    LDFLAGS  += -L$(KUHLHOME)/build-gcc/nstd/execution
 
     ifeq ($(USE_CXX11),yes)
         CPPFLAGS += -std=c++17
@@ -102,14 +108,17 @@ ifeq ($(COMPILER),clang)
     DEPFLAGS = -M
     xLTOFLAGS = -flto
     LOPTFLAGS = -O3
+    LDFLAGS  += -L$(KUHLHOME)/build-clang/nstd/execution
+    LDFLAGS  += -L$(TBBHOME)/build/macos_intel64_clang_cc8.1.0_os10.12.4_release
+    LDFLAGS  += -Wl,-rpath,$(TBBHOME)/build/macos_intel64_clang_cc8.1.0_os10.12.4_release
 
     ifeq ($(USE_CXX11),yes)
-        CPPFLAGS += -std=c++11
+        CPPFLAGS += -std=c++14
     endif
     CPPFLAGS += -I$(LIBCXX)/include
     xCXXLIB = -std=libc++
     CXXFLAGS += -W -Wall $(CXXLIB) $(OPTFLAGS)
-    LDFLAGS  = $(CXXLIB) -L$(LIBCXX)/lib
+    LDFLAGS  += $(CXXLIB) -L$(LIBCXX)/lib
 endif
 ifeq ($(COMPILER),icc)
     IS_INTEL=yes
