@@ -9,13 +9,20 @@
 #include <numeric>
 #include <complex>
 #include <random>
-#if 0
+#ifdef HAS_PSTL
 #include "experimental/algorithm"
 #include "experimental/execution_policy"
-#elif 0
+namespace PSTL = std::experimental::parallel;
+#endif
+#ifdef HAS_SYCLSTL
+#include "experimental/algorithm"
+#include "experimental/execution_policy"
+namespace SyclSTL = std::experimental::parallel;
+#endif
+#ifdef HAS_NSTL
 #include "algorithm"
 #include "execution_policy"
-#define HAS_PSTL 1
+namespace NSTL = std;
 #endif
 #include "nstd/execution/execution.hpp"
 //-dk:TODO #include "nstd/algorithm/sort.hpp"
@@ -25,10 +32,6 @@
 #include <iostream>
 #include <iterator>
 #include <stdlib.h>
-
-// namespace PSTL = std::experimental::parallel::v1;
-// namespace PSTL = std::experimental::parallel;
-namespace PSTL = std;
 
 // ----------------------------------------------------------------------------
 
@@ -57,6 +60,42 @@ namespace
         template <typename InIt, typename Comp>
         void operator()(InIt begin, InIt end, Comp comp) const {
             PSTL::sort(PSTL::par, begin, end, comp);
+        }
+    };
+#endif
+#ifdef HAS_NSTL
+    struct nstl_sort_seq
+    {
+        static char const* name() { return "NSTL::sort(NSTL::seq)"; }
+        template <typename InIt, typename Comp>
+        void operator()(InIt begin, InIt end, Comp comp) const {
+            NSTL::sort(PSTL::seq, begin, end, comp);
+        }
+    };
+    struct nstl_sort_par
+    {
+        static char const* name() { return "NSTL::sort(NSTL::par)"; }
+        template <typename InIt, typename Comp>
+        void operator()(InIt begin, InIt end, Comp comp) const {
+            NSTL::sort(PSTL::par, begin, end, comp);
+        }
+    };
+#endif
+#ifdef HAS_SYCLSTL
+    struct syclstl_sort_seq
+    {
+        static char const* name() { return "SyclSTL::sort(SyclSTL::seq)"; }
+        template <typename InIt, typename Comp>
+        void operator()(InIt begin, InIt end, Comp comp) const {
+            SyclSTL::sort(SyclSTL::seq, begin, end, comp);
+        }
+    };
+    struct syclstl_sort_par
+    {
+        static char const* name() { return "SyclSTL::sort(SyclSTL::par)"; }
+        template <typename InIt, typename Comp>
+        void operator()(InIt begin, InIt end, Comp comp) const {
+            SyclSTL::sort(SyclSTL::par, begin, end, comp);
         }
     };
 #endif
@@ -120,6 +159,14 @@ namespace
 #ifdef HAS_PSTL
         measure(context, from, comp, pstl_sort_seq());
         measure(context, from, comp, pstl_sort_par());
+#endif
+#ifdef HAS_NSTL
+        measure(context, from, comp, nstl_sort_seq());
+        measure(context, from, comp, nstl_sort_par());
+#endif
+#ifdef HAS_SYCLSTL
+        measure(context, from, comp, syclstl_sort_seq());
+        measure(context, from, comp, syclstl_sort_par());
 #endif
 #if 0
         measure(context, from, comp, nstd_sort_seq());

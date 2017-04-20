@@ -32,8 +32,8 @@ NAME = algorithm/all_of
 NAME = algorithm/copy
 NAME = algorithm/transform
 NAME = algorithm/parallel
-NAME = algorithm/for_each
 NAME = algorithm/sort
+NAME = algorithm/for_each
 
 TESTS = \
 	test/accumulate-int-array \
@@ -67,19 +67,15 @@ ifeq ($(USE_CXX11),yes)
     CPPFLAGS += -DUSE_CXX11
 endif
 
-# CPPFLAGS += -I../parallel/n3554/include -fopenmp
-# LDLIBS += -fopenmp
-# CPPFLAGS += -I../parallel/ParallelSTL/include
-# CPPFLAGS += -I../parallel/SyclParallelSTL/include
+CPPFLAGS += -fopenmp
+LDLIBS += -fopenmp
+# CPPFLAGS += -DHAS_PSTL -I../parallel/ParallelSTL/include
+# CPPFLAGS += -DHAS_SYCLSTL -I../parallel/SyclParallelSTL/include
+# CPPFLAGS += -DHAS_NSTL -I../parallel/n3554/include
 
 KUHLHOME = ../kuhllib
 CPPFLAGS += -I$(KUHLHOME)/src
 LDLIBS   += -lnstd-execution
-
-TBBHOME = ../parallel/tbb-2017_U5
-TBBHOME = /Users/kuehl/src/parallel/tbb-2017_U5
-CPPFLAGS += -I$(TBBHOME)/include
-LDLIBS   += -ltbb
 
 LIBCXX   = /Users/kuehl/src/llvm/libcxx
 # LIBSTDCXX = /opt/gcc-current/include/c++/4.9.0
@@ -119,6 +115,12 @@ ifeq ($(COMPILER),clang)
     xCXXLIB = -std=libc++
     CXXFLAGS += -W -Wall $(CXXLIB) $(OPTFLAGS)
     LDFLAGS  += $(CXXLIB) -L$(LIBCXX)/lib
+
+    TBBHOME = ../parallel/tbb-2017_U5
+    TBBHOME = /Users/kuehl/src/parallel/tbb-2017_U5
+    CPPFLAGS += -DHAS_TBB -I$(TBBHOME)/include
+    LDLIBS   += -ltbb
+
 endif
 ifeq ($(COMPILER),icc)
     IS_INTEL=yes
