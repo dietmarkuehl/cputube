@@ -9,6 +9,7 @@
 #include <numeric>
 #include <complex>
 #include <thread>
+#include <future>
 #if 0
 #include "experimental/algorithm"
 #include "experimental/execution_policy"
@@ -46,11 +47,6 @@ namespace
     };
     struct thread_for_each
     {
-        struct joined_thread: std::thread {
-            template <typename Fun>
-            joined_thread(Fun fun): std::thread(fun) {}
-            ~joined_thread(){ this->join(); }
-        };
         static char const* name() { return "thread for_each()"; }
         template <typename InIt, typename Fun>
         void operator()(InIt begin, InIt end, Fun fun) const {
@@ -66,6 +62,24 @@ namespace
                     });
             }
             for (auto& t: threads) { t.join(); }
+        }
+    };
+    struct async_for_each
+    {
+        static char const* name() { return "async for_each()"; }
+        template <typename InIt, typename Fun>
+        void operator()(InIt begin, InIt end, Fun fun) const {
+            int hw(std::thread::hardware_concurrency());
+            int size(std::distance(begin, end));
+            int chunk(size / hw);
+            std::vector<std::future<void>> futures;
+            for (int b(0); b < size; b += chunk) {
+                futures.emplace_back(std::async([=](){
+                        int e = std::min(size, b + chunk);
+                        std::for_each(begin + b, begin + e, fun);
+                        }));
+            }
+            for (auto& f: futures) { f.get(); }
         }
     };
 #ifdef HAS_PSTL
@@ -164,6 +178,7 @@ namespace
         measure(context, from, fun, std_for_each());
         measure(context, from, fun, std_for_each());
         measure(context, from, fun, thread_for_each());
+        measure(context, from, fun, async_for_each());
 #ifdef HAS_PSTL
         measure(context, from, fun, pstl_for_each_seq());
         measure(context, from, fun, pstl_for_each_par());
