@@ -6,7 +6,6 @@
 #include "cpu/tube/context.hpp"
 
 #include <algorithm>
-#include <complex>
 #include <functional>
 #include <numeric>
 #include <tbb/parallel_reduce.h>
@@ -45,6 +44,17 @@ namespace
         }
     };
 #endif
+    struct loop_reduce
+    {
+        static char const* name() { return "loop reduce"; }
+        template <typename InIt, typename T, typename Op>
+        T operator()(InIt it, InIt end, T value, Op op) const {
+            for (; it != end; ++it) {
+                value = op(value, *it);
+            }
+            return value;
+        }
+    };
 #ifdef HAS_PSTL_REDUCE
     struct pstl_reduce_seq
     {
@@ -63,6 +73,19 @@ namespace
         }
     };
 #endif
+    struct omp_reduce
+    {
+        static char const* name() { return "OpenMp reduce"; }
+        template <typename InIt, typename T, typename Op>
+        T operator()(InIt begin, InIt end, T value, Op) const {
+            // this is cheating: not using the reduction operation!
+            #pragma omp parallel for default(shared) reduction(+:value)
+            for (InIt it = begin; it < end; ++it) {
+                value += *it;
+            }
+            return value;
+        }
+    };
     struct tbb_reduce
     {
         static char const* name() { return "tbb::parallel_reduce()"; }
@@ -85,11 +108,11 @@ namespace
 namespace
 {
     template <typename Competitor, typename T, typename Op>
-    void measure(cpu::tube::context&     context,
-                 std::vector<std::complex<double>> const& range,
-                 T                       init,
-                 Op                      op,
-                 Competitor const&       competitor)
+    void measure(cpu::tube::context&        context,
+                 std::vector<double> const& range,
+                 T                          init,
+                 Op                         op,
+                 Competitor const&          competitor)
     {
         auto timer = context.start();
         auto result = competitor(range.begin(), range.end(), init, op);
@@ -102,21 +125,23 @@ namespace
 
     template <typename T, typename Op>
     void run_tests(cpu::tube::context& context, int size, T init, Op op) {
-        std::vector<std::complex<double>> range;
+        std::vector<double> range;
         int value(0);
         std::generate_n(std::back_inserter(range), size,
                         [value, size]() mutable {
-                            return std::complex<double>(2.5 * ++value / size - 0.5, 0.001);
+                            return 2.5 * ++value / size - 0.5;
                         });
 
         measure(context, range, init, op, std_accumulate());
 #ifdef HAS_STD_REDUCE
         measure(context, range, init, op, std_reduce());
 #endif
+        measure(context, range, init, op, loop_reduce());
 #ifdef HAS_PSTL_REDUCE
         measure(context, range, init, op, pstl_reduce_seq());
         measure(context, range, init, op, pstl_reduce_par());
 #endif
+        measure(context, range, init, op, omp_reduce());
         measure(context, range, init, op, tbb_reduce());
     }
 }
@@ -146,5 +171,5 @@ int main(int ac, char* av[])
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
     int size(ac == 1? 0: atoi(av[1]));
     // run_test_driver(context, size, [](int size, int value){ return value /= 17; });
-    run_test_driver(context, size, std::complex<double>(), std::plus<>());
+    run_test_driver(context, size, double(), std::plus<>());
 }

@@ -121,7 +121,7 @@ ifeq ($(COMPILER),clang)
         CPPFLAGS += -std=c++14
     endif
     CPPFLAGS += -I$(LIBCXX)/include
-    xCXXLIB = -std=libc++
+    CXXLIB = -stdlib=libc++
     CXXFLAGS += -W -Wall $(CXXLIB) $(OPTFLAGS)
     LDFLAGS  += $(CXXLIB) -L$(LIBCXX)/lib
 
