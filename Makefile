@@ -35,6 +35,7 @@ NAME = algorithm/sort
 NAME = algorithm/for_each-mandelbrot
 NAME = algorithm/for_each
 NAME = algorithm/transform
+NAME = algorithm/reduce
 
 TESTS = \
 	test/accumulate-int-array \
