@@ -219,6 +219,14 @@ int main(int ac, char* av[])
 {
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
     int size(ac == 1? 0: atoi(av[1]));
-    auto fun = [](int& value){ value *= 17; };
+    auto fun = [=](int& value){
+        constexpr int max(2000);
+        std::complex<double> p(2.5 * value / size - 0.5, 0.001);
+        int count(0);
+        for (std::complex<double> v(p); norm(v) < 4.0 && count != max; ++count) {
+            v = v * v - p;
+        }
+        value = count;
+    };
     run(context, size, fun);
 }

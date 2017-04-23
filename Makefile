@@ -33,6 +33,7 @@ NAME = algorithm/copy
 NAME = algorithm/transform
 NAME = algorithm/parallel
 NAME = algorithm/sort
+NAME = algorithm/for_each-mandelbrot
 NAME = algorithm/for_each
 
 TESTS = \
@@ -56,6 +57,7 @@ CLANGXX   = clang++
 AR        = ar
 ARFLAGS   = rcu
 USE_CXX11 = yes
+SYSTEM    = $(shell uname -s)
 # BSL_CPPFLAGS += -I/usr/local/include/bsl -DHAS_BSL
 # BSL_CPPFLAGS += -I/usr/local/include/bdl
 # BSL_LDLIBS   += -lbsl
@@ -80,6 +82,9 @@ LDLIBS   += -lnstd-execution
 LIBCXX   = /Users/kuehl/src/llvm/libcxx
 # LIBSTDCXX = /opt/gcc-current/include/c++/4.9.0
 
+FINTBB = @echo no finalization needed on $(SYSTEM) for TBB:
+FINOMP = @echo no finalization needed on $(SYSTEM) for OMP:
+
 ifeq ($(COMPILER),gcc)
     CXX      = $(GXX)
     DEPFLAGS = -M
@@ -98,6 +103,11 @@ ifeq ($(COMPILER),gcc)
     CPPLFAGS += -DIS_GCC
     CXXFLAGS += -W -Wall -Wno-unused-local-typedefs
     LDFLAGS  += $(LTOFLAGS)
+    LDLIBS   += -ltbb
+
+    ifeq ($(SYSTEM),Darwin)
+      FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/gcc-6.3.0/lib/libtbb.dylib"
+    endif
 endif
 ifeq ($(COMPILER),clang)
     CXX      = $(CLANGXX)
@@ -105,8 +115,6 @@ ifeq ($(COMPILER),clang)
     xLTOFLAGS = -flto
     LOPTFLAGS = -O3
     LDFLAGS  += -L$(KUHLHOME)/build-clang/nstd/execution
-    LDFLAGS  += -L$(TBBHOME)/build/macos_intel64_clang_cc8.1.0_os10.12.4_release
-    LDFLAGS  += -Wl,-rpath,$(TBBHOME)/build/macos_intel64_clang_cc8.1.0_os10.12.4_release
 
     ifeq ($(USE_CXX11),yes)
         CPPFLAGS += -std=c++14
@@ -120,6 +128,11 @@ ifeq ($(COMPILER),clang)
     TBBHOME = /Users/kuehl/src/parallel/tbb-2017_U5
     CPPFLAGS += -DHAS_TBB -I$(TBBHOME)/include
     LDLIBS   += -ltbb
+    LDFLAGS += -L/opt/llvm-4.0.0/lib
+    ifeq ($(SYSTEM),Darwin)
+      FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/llvm-4.0.0/lib/libtbb.dylib"
+      FINOMP = install_name_tool -change "@rpath/libomp.dylib" "/opt/llvm-4.0.0/lib/libomp.dylib"
+    endif
 
 endif
 ifeq ($(COMPILER),icc)
@@ -135,9 +148,15 @@ ifeq ($(IS_INTEL),yes)
     LOPTFLAGS = -O3
     ifeq ($(USE_CXX11),yes)
         xCPPFLAGS += -Icpu/icc-lib
-        CXXFLAGS += -DINTEL -std=c++11
+        CXXFLAGS += -DINTEL -std=c++14
     endif
     CXXFLAGS += $(OPTFLAGS)
+    LDFLAGS  += -L$(KUHLHOME)/build-intel/nstd/execution
+    LDLIBS += -ltbb
+    ifeq ($(SYSTEM),Darwin)
+      FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/intel/compilers_and_libraries_2017.2.163/mac/tbb/lib/libtbb.dylib"
+      FINOMP = install_name_tool -change "@rpath/libiomp5.dylib" "/opt/intel/compilers_and_libraries_2017.2.163/mac/compiler/lib/libiomp5.dylib"
+    endif
 endif
 
 OPTEXT   = $(shell echo $(OPTFLAGS) | tr -d '-' | tr ' ' '-')
@@ -200,6 +219,8 @@ check: $(OBJ)/cputest_$(NAME)
 
 $(OBJ)/cputest_$(NAME): $(OBJ)/libcputube.a $(TESTFILES)
 	$(CXX) -o $@ $(LDFLAGS) $(TESTFILES) -L$(OBJ) -lcputube $(LDLIBS)
+	$(FINTBB) $@
+	$(FINOMP) $@
 
 $(OBJ)/libcputube.a: $(LIBFILES)
 	$(AR) $(ARFLAGS) $@ $(LIBFILES)
