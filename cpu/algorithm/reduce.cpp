@@ -146,7 +146,10 @@ namespace
 
         std::ostringstream out;
         out << competitor.name() << " [" << range.size() << "]";
-        context.report(out.str(), time, result);
+        std::ostringstream aux;
+        aux.precision(9);
+        aux << result;
+        context.report(out.str(), time, aux.str());
     }
 
     template <typename T, typename Op>
