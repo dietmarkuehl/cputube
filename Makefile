@@ -74,7 +74,7 @@ CPPFLAGS += -fopenmp
 LDLIBS += -fopenmp
 # CPPFLAGS += -DHAS_PSTL -I../parallel/ParallelSTL/include
 # CPPFLAGS += -DHAS_SYCLSTL -I../parallel/SyclParallelSTL/include
-CPPFLAGS += -DHAS_PSTL -I../parallel/n3554/include
+#CPPFLAGS += -DHAS_PSTL -I../parallel/n3554/include
 
 KUHLHOME = ../kuhllib
 CPPFLAGS += -I$(KUHLHOME)/src
@@ -107,7 +107,9 @@ ifeq ($(COMPILER),gcc)
     LDLIBS   += -ltbb
 
     ifeq ($(SYSTEM),Darwin)
-      FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/gcc-6.3.0/lib/libtbb.dylib"
+        FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/gcc-6.3.0/lib/libtbb.dylib"
+     else
+        LDFLAGS+=-Wl,-rpath=/opt/gcc-6.3.0/lib
     endif
 endif
 ifeq ($(COMPILER),clang)
@@ -130,6 +132,8 @@ ifeq ($(COMPILER),clang)
     ifeq ($(SYSTEM),Darwin)
       FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/llvm-4.0.0/lib/libtbb.dylib"
       FINOMP = install_name_tool -change "@rpath/libomp.dylib" "/opt/llvm-4.0.0/lib/libomp.dylib"
+    else
+        LDFLAGS+=-Wl,-rpath=/opt/llvm-4.0.0/lib
     endif
 
 endif
