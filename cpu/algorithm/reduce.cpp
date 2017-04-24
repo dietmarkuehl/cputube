@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <functional>
 #include <numeric>
+#include <nstd/execution/execution.hpp>
+#include <nstd/algorithm/reduce.hpp>
 #include <tbb/parallel_reduce.h>
 #include <tbb/blocked_range.h>
 #include "experimental/algorithm"
@@ -73,6 +75,30 @@ namespace
         }
     };
 #endif
+    struct nstd_reduce_seq
+    {
+        static char const* name() { return "nstd::reduce(nstd::seq)"; }
+        template <typename InIt, typename T, typename Op>
+        T operator()(InIt begin, InIt end, T init, Op op) const {
+            return nstd::algorithm::reduce(nstd::execution::seq, begin, end, init, op);
+        }
+    };
+    struct nstd_reduce_par
+    {
+        static char const* name() { return "nstd::reduce(nstd::par)"; }
+        template <typename InIt, typename T, typename Op>
+        T operator()(InIt begin, InIt end, T init, Op op) const {
+            return nstd::algorithm::reduce(nstd::execution::par, begin, end, init, op);
+        }
+    };
+    struct nstd_reduce_par_unseq
+    {
+        static char const* name() { return "nstd::reduce(nstd::par_unseq)"; }
+        template <typename InIt, typename T, typename Op>
+        T operator()(InIt begin, InIt end, T init, Op op) const {
+            return nstd::algorithm::reduce(nstd::execution::par_unseq, begin, end, init, op);
+        }
+    };
     struct omp_reduce
     {
         static char const* name() { return "OpenMp reduce"; }
@@ -141,6 +167,9 @@ namespace
         measure(context, range, init, op, pstl_reduce_seq());
         measure(context, range, init, op, pstl_reduce_par());
 #endif
+        measure(context, range, init, op, nstd_reduce_seq());
+        measure(context, range, init, op, nstd_reduce_par());
+        measure(context, range, init, op, nstd_reduce_par_unseq());
         measure(context, range, init, op, omp_reduce());
         measure(context, range, init, op, tbb_reduce());
     }
