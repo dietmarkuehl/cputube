@@ -62,9 +62,11 @@ SYSTEM    = $(shell uname -s)
 # BSL_CPPFLAGS += -I/usr/local/include/bsl -DHAS_BSL
 # BSL_CPPFLAGS += -I/usr/local/include/bdl
 # BSL_LDLIBS   += -lbsl
+HPXLIBS   = -Wl,-rpath -Wl,/opt/gcc-7.2.0/lib
+HPXLIBS   += -lhpx_init -lhpx -lboost_program_options -lboost_system
 
 CPPFLAGS = $(BSL_CPPFLAGS)
-LDLIBS   = $(BSL_LDLIBS)
+LDLIBS   = $(BSL_LDLIBS) $(HPXLIBS)
 
 ifeq ($(USE_CXX11),yes)
     CPPFLAGS += -DUSE_CXX11
@@ -83,6 +85,7 @@ LDLIBS   += -lnstd-execution
 LIBCXX   = /Users/kuehl/src/llvm/libcxx
 # LIBSTDCXX = /opt/gcc-current/include/c++/4.9.0
 
+FINHPX = @echo no finalization needed on $(SYSTEM) for HPX:
 FINTBB = @echo no finalization needed on $(SYSTEM) for TBB:
 FINOMP = @echo no finalization needed on $(SYSTEM) for OMP:
 
@@ -111,6 +114,7 @@ ifeq ($(COMPILER),gcc)
      else
         LDFLAGS+=-Wl,-rpath=/opt/gcc-6.3.0/lib
     endif
+    FINHPX = install_name_tool -change "@rpath/libhpx.1.dylib" "/opt/gcc-7.2.0/lib/libhpx.1.dylib"
 endif
 ifeq ($(COMPILER),clang)
     CXX      = $(CLANGXX)
@@ -217,10 +221,11 @@ build-all:
 
 .PHONY: check
 check: $(OBJ)/cputest_$(NAME)
-	$(OBJ)/cputest_$(NAME) | tee $(OBJ)/cputest_$(NAME).result
+	DYLD_LIBRARY_PATH=/opt/gcc-7.2.0/lib $(OBJ)/cputest_$(NAME) | tee $(OBJ)/cputest_$(NAME).result
 
 $(OBJ)/cputest_$(NAME): $(OBJ)/libcputube.a $(TESTFILES)
 	$(CXX) -o $@ $(LDFLAGS) $(TESTFILES) -L$(OBJ) -lcputube $(LDLIBS)
+	$(FINHPX) $@
 	$(FINTBB) $@
 	$(FINOMP) $@
 

@@ -22,6 +22,13 @@
 #include <iterator>
 #include <stdlib.h>
 
+#include <hpx/hpx_init.hpp>
+#include <hpx/hpx.hpp>
+#include <hpx/include/parallel_reduce.hpp>
+// #include <boost/program_options.hpp>
+#include <string>
+#include <vector>
+
 // namespace PSTL = std::experimental::parallel::v1;
 // namespace PSTL = std::experimental::parallel;
 namespace PSTL = std;
@@ -137,6 +144,19 @@ namespace
                                         }, op);
         }
     };
+    struct hpx_reduce
+    {
+        static char const* name() { return "hpx::reduce()"; }
+        template <typename InIt, typename T, typename Op>
+        T operator()(InIt begin, InIt end, T init, Op op) const {
+            auto rc = hpx::parallel::reduce(hpx::parallel::execution::seq,
+                                         begin,
+                                         end,
+                                         init,
+                                         op);
+            return rc;
+        }
+    };
 }
 
 // ----------------------------------------------------------------------------
@@ -186,6 +206,7 @@ namespace
         measure(context, range, init, op, nstd_reduce_tbb());
         measure(context, range, init, op, omp_reduce());
         measure(context, range, init, op, tbb_reduce());
+        measure(context, range, init, op, hpx_reduce());
     }
 }
 
@@ -209,10 +230,17 @@ void run_test_driver(cpu::tube::context& context, int size, T init, Op op)
 
 // ----------------------------------------------------------------------------
 
-int main(int ac, char* av[])
+int hpx_main(int ac, char* av[])
 {
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
-    int size(ac == 1? 0: atoi(av[1]));
-    // run_test_driver(context, size, [](int size, int value){ return value /= 17; });
+    int                size(0);
     run_test_driver(context, size, double(), [](auto a, auto b){ return a + b; });
+    return hpx::finalize();
+}
+
+int main(int ac, char* av[])
+{
+    boost::program_options::option_description commandline;
+    std::vector<std::string>                   cfg{ "hpx.os_threads=all" };
+    hpx::init(ac, av, cfg);
 }
