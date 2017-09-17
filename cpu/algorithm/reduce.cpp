@@ -12,7 +12,9 @@
 #include <nstd/algorithm/reduce.hpp>
 #include <tbb/parallel_reduce.h>
 #include <tbb/blocked_range.h>
+#ifdef HAS_PSTL
 #include "experimental/algorithm"
+#endif
 //#include "experimental/execution_policy"
 
 #include <iomanip>
@@ -154,7 +156,10 @@ namespace
 
         std::ostringstream out;
         out << competitor.name() << " [" << range.size() << "]";
-        context.report(out.str(), time, result);
+        std::ostringstream aux;
+        aux.precision(9);
+        aux << result;
+        context.report(out.str(), time, aux.str());
     }
 
     template <typename T, typename Op>
@@ -209,5 +214,5 @@ int main(int ac, char* av[])
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
     int size(ac == 1? 0: atoi(av[1]));
     // run_test_driver(context, size, [](int size, int value){ return value /= 17; });
-    run_test_driver(context, size, double(), std::plus<>());
+    run_test_driver(context, size, double(), [](auto a, auto b){ return a + b; });
 }
