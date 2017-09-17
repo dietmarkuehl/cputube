@@ -99,6 +99,14 @@ namespace
             return nstd::algorithm::reduce(nstd::execution::par_unseq, begin, end, init, op);
         }
     };
+    struct nstd_reduce_tbb
+    {
+        static char const* name() { return "nstd::reduce(nstd::par_unseq)"; }
+        template <typename InIt, typename T, typename Op>
+        T operator()(InIt begin, InIt end, T init, Op op) const {
+            return nstd::algorithm::reduce(nstd::execution::tbb, begin, end, init, op);
+        }
+    };
     struct omp_reduce
     {
         static char const* name() { return "OpenMp reduce"; }
@@ -123,7 +131,7 @@ namespace
                                             auto const& value) {
                                             return std::accumulate(begin + range.begin(),
                                                                    begin + range.end(),
-                                                                   value);
+                                                                   value, op);
                                         }, op);
         }
     };
@@ -170,6 +178,7 @@ namespace
         measure(context, range, init, op, nstd_reduce_seq());
         measure(context, range, init, op, nstd_reduce_par());
         measure(context, range, init, op, nstd_reduce_par_unseq());
+        measure(context, range, init, op, nstd_reduce_tbb());
         measure(context, range, init, op, omp_reduce());
         measure(context, range, init, op, tbb_reduce());
     }
