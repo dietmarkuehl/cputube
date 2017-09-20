@@ -25,7 +25,6 @@
 #include <hpx/hpx_init.hpp>
 #include <hpx/hpx.hpp>
 #include <hpx/include/parallel_reduce.hpp>
-// #include <boost/program_options.hpp>
 #include <string>
 #include <vector>
 
@@ -240,7 +239,6 @@ int hpx_main(int ac, char* av[])
 
 int main(int ac, char* av[])
 {
-    boost::program_options::option_description commandline;
-    std::vector<std::string>                   cfg{ "hpx.os_threads=all" };
+    std::vector<std::string> cfg{ "hpx.os_threads=all" };
     hpx::init(ac, av, cfg);
 }
