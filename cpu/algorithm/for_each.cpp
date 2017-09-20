@@ -160,7 +160,7 @@ namespace
         template <typename InIt, typename Fun>
         void operator()(InIt begin, InIt end, Fun fun) const {
             //-dk:TODO use par
-            hpx::parallel::for_each(hpx::parallel::execution::seq,
+            hpx::parallel::for_each(hpx::parallel::execution::par,
                                     begin, end, fun);
         }
     };

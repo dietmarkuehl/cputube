@@ -150,7 +150,7 @@ namespace
         template <typename InIt, typename T, typename Op>
         T operator()(InIt begin, InIt end, T init, Op op) const {
             //-dk:TODO use par
-            auto rc = hpx::parallel::reduce(hpx::parallel::execution::seq,
+            auto rc = hpx::parallel::reduce(hpx::parallel::execution::par,
                                          begin,
                                          end,
                                          init,

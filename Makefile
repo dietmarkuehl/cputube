@@ -63,7 +63,7 @@ SYSTEM    = $(shell uname -s)
 # BSL_CPPFLAGS += -I/usr/local/include/bdl
 # BSL_LDLIBS   += -lbsl
 HPXLIBS   = -Wl,-rpath -Wl,/opt/gcc-7.2.0/lib
-HPXLIBS   += -lhpx_init -lhpx -lboost_program_options -lboost_system
+HPXLIBS   += -lhpx_init -lhpx -lboost_program_options -lboost_system -lboost_thread
 
 CPPFLAGS = $(BSL_CPPFLAGS)
 LDLIBS   = $(BSL_LDLIBS) $(HPXLIBS)
@@ -100,7 +100,7 @@ ifeq ($(COMPILER),gcc)
     LDFLAGS  += -L$(KUHLHOME)/build-gcc/nstd/execution
 
     ifeq ($(USE_CXX11),yes)
-        CPPFLAGS += -std=c++17
+        CPPFLAGS += -std=c++14
     else
         CPPFLAGS += -ansi -pedantic
     endif
@@ -114,7 +114,9 @@ ifeq ($(COMPILER),gcc)
      else
         LDFLAGS+=-Wl,-rpath=/opt/gcc-6.3.0/lib
     endif
-    FINHPX = install_name_tool -change "@rpath/libhpx.1.dylib" "/opt/gcc-7.2.0/lib/libhpx.1.dylib"
+    ifeq ($(SYSTEM),Darwin)
+        FINHPX = install_name_tool -change "@rpath/libhpx.1.dylib" "/opt/gcc-7.2.0/lib/libhpx.1.dylib"
+    endif
 endif
 ifeq ($(COMPILER),clang)
     CXX      = $(CLANGXX)
