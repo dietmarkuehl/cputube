@@ -8,6 +8,9 @@
 #include <algorithm>
 #include <functional>
 #include <numeric>
+#include <string>
+#include <vector>
+
 #include <nstd/execution/execution.hpp>
 #include <nstd/algorithm/reduce.hpp>
 #include <tbb/parallel_reduce.h>
@@ -25,8 +28,6 @@
 #include <hpx/hpx_init.hpp>
 #include <hpx/hpx.hpp>
 #include <hpx/include/parallel_reduce.hpp>
-#include <string>
-#include <vector>
 
 // namespace PSTL = std::experimental::parallel::v1;
 // namespace PSTL = std::experimental::parallel;
@@ -145,9 +146,10 @@ namespace
     };
     struct hpx_reduce
     {
-        static char const* name() { return "hpx::reduce()"; }
+        static char const* name() { return "hpx::parallel::reduce()"; }
         template <typename InIt, typename T, typename Op>
         T operator()(InIt begin, InIt end, T init, Op op) const {
+            //-dk:TODO use par
             auto rc = hpx::parallel::reduce(hpx::parallel::execution::seq,
                                          begin,
                                          end,

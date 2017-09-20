@@ -27,6 +27,10 @@
 #include <iterator>
 #include <stdlib.h>
 
+#include <hpx/hpx_init.hpp>
+#include <hpx/hpx.hpp>
+#include <hpx/include/parallel_for_each.hpp>
+
 // namespace PSTL = std::experimental::parallel::v1;
 // namespace PSTL = std::experimental::parallel;
 namespace PSTL = std;
@@ -150,6 +154,16 @@ namespace
             }
         }
     };
+    struct hpx_for_each
+    {
+        static char const* name() { return "hpx::parallel::for_each"; }
+        template <typename InIt, typename Fun>
+        void operator()(InIt begin, InIt end, Fun fun) const {
+            //-dk:TODO use par
+            hpx::parallel::for_each(hpx::parallel::execution::seq,
+                                    begin, end, fun);
+        }
+    };
 }
 
 // ----------------------------------------------------------------------------
@@ -193,6 +207,7 @@ namespace
         measure(context, from, fun, nstd_for_each_tbb());
         measure(context, from, fun, tbb_for_each());
         measure(context, from, fun, omp_for_each());
+        measure(context, from, fun, hpx_for_each());
     }
 }
 
@@ -215,10 +230,17 @@ void run(cpu::tube::context& context, int size, Fun fun) {
 
 // ----------------------------------------------------------------------------
 
-int main(int ac, char* av[])
+int hpx_main(int ac, char* av[])
 {
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
     int size(ac == 1? 0: atoi(av[1]));
     auto fun = [](int& value){ value *= 17; };
     run(context, size, fun);
+    return hpx::finalize();
+}
+
+int main(int ac, char* av[])
+{
+    std::vector<std::string> cfg{ "hpx.os_threads=all" };
+    hpx::init(ac, av, cfg);
 }

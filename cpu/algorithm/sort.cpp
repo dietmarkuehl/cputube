@@ -33,6 +33,10 @@ namespace NSTL = std;
 #include <iterator>
 #include <stdlib.h>
 
+#include <hpx/hpx_init.hpp>
+#include <hpx/hpx.hpp>
+#include <hpx/include/parallel_sort.hpp>
+
 // ----------------------------------------------------------------------------
 
 namespace
@@ -113,6 +117,14 @@ namespace
             tbb::parallel_sort(begin, end, comp);
         }
     };
+    struct hpx_sort
+    {
+        static char const* name() { return "hpx::parallel::sort()"; }
+        template <typename InIt, typename Comp>
+        void operator()(InIt begin, InIt end, Comp comp) const {
+            hpx::parallel::sort(hpx::parallel::execution::par, begin, end, comp);
+        }
+    };
 }
 
 // ----------------------------------------------------------------------------
@@ -155,6 +167,7 @@ namespace
         measure(context, from, comp, nstd_sort_par());
         measure(context, from, comp, nstd_sort_tbb());
         measure(context, from, comp, tbb_sort());
+        measure(context, from, comp, hpx_sort());
     }
 }
 
@@ -177,10 +190,17 @@ void run(cpu::tube::context& context, int size, Comp comp) {
 
 // ----------------------------------------------------------------------------
 
-int main(int ac, char* av[])
+int hpx_main(int ac, char* av[])
 {
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
     int size(ac == 1? 0: atoi(av[1]));
     auto comp = [=](auto v0, auto v1){ return v0 < v1; };
     run(context, size, comp);
+    return hpx::finalize();
+}
+
+int main(int ac, char* av[])
+{
+    std::vector<std::string> cfg{ "hpx.os_threads=all" };
+    hpx::init(ac, av, cfg);
 }
