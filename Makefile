@@ -59,7 +59,7 @@ PARALLEL_TESTS = \
 #  ----------------------------------------------------------------------------
 
 COMPILER  = gcc
-GXX       = /opt/gcc-6.3.0/bin/g++
+GXX       = /opt/gcc-7.2.0/bin/g++
 CLANGXX   = clang++
 AR        = ar
 ARFLAGS   = rcu
@@ -69,7 +69,7 @@ SYSTEM    = $(shell uname -s)
 # BSL_CPPFLAGS += -I/usr/local/include/bdl
 # BSL_LDLIBS   += -lbsl
 # HPXLIBS   = -Wl,-rpath -Wl,/opt/gcc-7.2.0/lib
-HPXLIBS   += -lhpx_init -lhpx -L/opt/intel/lib -lboost_program_options -lboost_system -lboost_thread
+HPXLIBS   += -lhpx_init -lhpx -L/opt/gcc-7.2.0/lib -lboost_regex -lboost_program_options -lboost_system -lboost_thread
 
 CPPFLAGS = $(BSL_CPPFLAGS)
 LDLIBS   = $(BSL_LDLIBS) $(HPXLIBS)
@@ -116,7 +116,7 @@ ifeq ($(COMPILER),gcc)
     LDLIBS   += -ltbb
 
     ifeq ($(SYSTEM),Darwin)
-        FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/gcc-6.3.0/lib/libtbb.dylib"
+        FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/gcc-7.2.0/lib/libtbb.dylib"
      else
         LDFLAGS+=-Wl,-rpath=/opt/gcc-6.3.0/lib
     endif
