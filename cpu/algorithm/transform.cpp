@@ -9,13 +9,17 @@
 #include <numeric>
 #include <complex>
 #include <tbb/parallel_for.h>
-#include "experimental/algorithm"
+//#include "experimental/algorithm"
 //#include "experimental/execution_policy"
 
 #include <iomanip>
 #include <iostream>
 #include <iterator>
 #include <stdlib.h>
+
+#include <hpx/hpx_init.hpp>
+#include <hpx/hpx.hpp>
+#include <hpx/include/parallel_reduce.hpp>
 
 // namespace PSTL = std::experimental::parallel::v1;
 // namespace PSTL = std::experimental::parallel;
@@ -62,6 +66,15 @@ namespace
             return to + (end - begin);
         }
     };
+    struct hpx_transform
+    {
+        static char const* name() { return "hpx::parallel::transform()"; }
+        template <typename InIt, typename OutIt, typename Fun>
+        OutIt operator()(InIt begin, InIt end, OutIt to, Fun fun) const {
+            return hpx::parallel::transform(hpx::parallel::execution::par,
+                                            begin, end, to, fun);
+        }
+    };
 }
 
 // ----------------------------------------------------------------------------
@@ -97,6 +110,7 @@ namespace
         measure(context, from, to, fun, pstl_transform_seq());
         measure(context, from, to, fun, pstl_transform_par());
         measure(context, from, to, fun, tbb_transform());
+        measure(context, from, to, fun, hpx__transform());
     }
 }
 
@@ -122,7 +136,7 @@ void run_test_driver(cpu::tube::context& context, int size, Fun fun)
 
 // ----------------------------------------------------------------------------
 
-int main(int ac, char* av[])
+int hpx_main(int ac, char* av[])
 {
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
     int size(ac == 1? 0: atoi(av[1]));
@@ -136,4 +150,11 @@ int main(int ac, char* av[])
             }
             return count;
         });
+    return hpx::finalize();
+}
+
+int main(int ac, char* av[])
+{
+    std::vector<std::string> cfg{ "hpx.os_threads=all" };
+    hpx::init(ac, av, cfg);
 }

@@ -50,6 +50,12 @@ TESTS = \
 	test/write-characters  \
 	test/write-ints  \
 
+PARALLEL_TESTS = \
+	algorithm/sort \
+	algorithm/for_each-mandelbrot \
+	algorithm/for_each \
+	algorithm/reduce \
+
 #  ----------------------------------------------------------------------------
 
 COMPILER  = gcc
@@ -62,8 +68,8 @@ SYSTEM    = $(shell uname -s)
 # BSL_CPPFLAGS += -I/usr/local/include/bsl -DHAS_BSL
 # BSL_CPPFLAGS += -I/usr/local/include/bdl
 # BSL_LDLIBS   += -lbsl
-HPXLIBS   = -Wl,-rpath -Wl,/opt/gcc-7.2.0/lib
-HPXLIBS   += -lhpx_init -lhpx -lboost_program_options -lboost_system -lboost_thread
+# HPXLIBS   = -Wl,-rpath -Wl,/opt/gcc-7.2.0/lib
+HPXLIBS   += -lhpx_init -lhpx -L/opt/intel/lib -lboost_program_options -lboost_system -lboost_thread
 
 CPPFLAGS = $(BSL_CPPFLAGS)
 LDLIBS   = $(BSL_LDLIBS) $(HPXLIBS)
@@ -210,6 +216,13 @@ chart: $(OBJ)/cputube_chart
 .PHONY: all
 all:
 	for f in $(TESTS); \
+	do \
+	    $(MAKE) check NAME=$$f; \
+	done
+
+.PHONY: parallel-all
+parallel-all:
+	for f in $(PARALLEL_TESTS); \
 	do \
 	    $(MAKE) check NAME=$$f; \
 	done
