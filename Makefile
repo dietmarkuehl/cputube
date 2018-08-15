@@ -37,6 +37,8 @@ NAME = algorithm/for_each
 NAME = algorithm/transform
 NAME = algorithm/reduce
 
+NAME = test/write-ints
+
 TESTS = \
 	test/accumulate-int-array \
 	test/functions \
@@ -69,7 +71,7 @@ SYSTEM    = $(shell uname -s)
 # BSL_CPPFLAGS += -I/usr/local/include/bdl
 # BSL_LDLIBS   += -lbsl
 # HPXLIBS   = -Wl,-rpath -Wl,/opt/gcc-7.2.0/lib
-HPXLIBS   += -lhpx_init -lhpx -L/opt/gcc-7.2.0/lib -lboost_regex -lboost_program_options -lboost_system -lboost_thread
+# HPXLIBS   += -lhpx_init -lhpx -L/opt/gcc-7.2.0/lib -lboost_regex -lboost_program_options -lboost_system -lboost_thread
 
 CPPFLAGS = $(BSL_CPPFLAGS)
 LDLIBS   = $(BSL_LDLIBS) $(HPXLIBS)
@@ -113,7 +115,7 @@ ifeq ($(COMPILER),gcc)
     CPPLFAGS += -DIS_GCC
     CXXFLAGS += -W -Wall -Wno-unused-local-typedefs
     LDFLAGS  += $(LTOFLAGS)
-    LDLIBS   += -ltbb
+    # LDLIBS   += -ltbb
 
     ifeq ($(SYSTEM),Darwin)
         FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/gcc-7.2.0/lib/libtbb.dylib"
@@ -139,7 +141,7 @@ ifeq ($(COMPILER),clang)
     CXXFLAGS += -W -Wall $(CXXLIB) $(OPTFLAGS)
     LDFLAGS  += $(CXXLIB) -L$(LIBCXX)/lib
 
-    LDLIBS   += -ltbb
+    # LDLIBS   += -ltbb
     LDFLAGS += -L/opt/llvm-4.0.0/lib
     ifeq ($(SYSTEM),Darwin)
       FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/llvm-4.0.0/lib/libtbb.dylib"
@@ -166,7 +168,7 @@ ifeq ($(IS_INTEL),yes)
     endif
     CXXFLAGS += $(OPTFLAGS)
     LDFLAGS  += -L$(KUHLHOME)/build-intel/nstd/execution
-    LDLIBS += -ltbb
+    # LDLIBS += -ltbb
     ifeq ($(SYSTEM),Darwin)
       FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/intel/compilers_and_libraries_2017.2.163/mac/tbb/lib/libtbb.dylib"
       FINOMP = install_name_tool -change "@rpath/libiomp5.dylib" "/opt/intel/compilers_and_libraries_2017.2.163/mac/compiler/lib/libiomp5.dylib"

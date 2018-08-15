@@ -37,10 +37,22 @@
 
 namespace
 {
+    struct format_ostream
+    {
+        std::ofstream d_out;
+        format_ostream(char const* name): d_out(name, std::ios_base::app) {}
+        void process(std::vector<int> const& values) {
+            for (int x: values) {
+                this->d_out << x << ' ';
+            }
+            this->d_out << '\n';
+        }
+    };
+ 
     struct copy_ostream_iterator
     {
         std::ofstream d_out;
-        copy_ostream_iterator(char const* name): d_out(name) {}
+        copy_ostream_iterator(char const* name): d_out(name, std::ios_base::app) {}
         void process(std::vector<int> const& values) {
             std::copy(values.begin(), values.end(),
                       std::ostream_iterator<int>(this->d_out, " "));
@@ -52,7 +64,7 @@ namespace
     struct to_string_stream
     {
         std::ofstream d_out;
-        to_string_stream(char const* name): d_out(name) {}
+        to_string_stream(char const* name): d_out(name, std::ios_base::app) {}
         void process(std::vector<int> const& values) {
             for (int x: values) {
                 this->d_out << std::to_string(x) << ' ';
@@ -65,7 +77,7 @@ namespace
     struct boost_lexical_cast
     {
         std::ofstream d_out;
-        boost_lexical_cast(char const* name): d_out(name) {}
+        boost_lexical_cast(char const* name): d_out(name, std::ios_base::app) {}
         void process(std::vector<int> const& values) {
             for (int x: values) {
                 this->d_out << boost::lexical_cast<std::string>(x) << ' ';
@@ -77,7 +89,7 @@ namespace
     struct num_put_copy
     {
         std::ofstream d_out;
-        num_put_copy(char const* name): d_out(name) {}
+        num_put_copy(char const* name): d_out(name, std::ios_base::app) {}
         void process(std::vector<int> const& values) {
             char buffer[1000 * 12], * end(buffer);
             std::num_put<char, char*> const& np(std::use_facet<std::num_put<char, char*>>(std::locale()));
@@ -93,7 +105,7 @@ namespace
     struct fprintf_values
     {
         FILE* d_file;
-        fprintf_values(char const* name): d_file(fopen(name, "w")) {
+        fprintf_values(char const* name): d_file(fopen(name, "w+")) {
             if (!this->d_file) {
                 throw std::runtime_error("failed to open file");
             }
@@ -114,7 +126,7 @@ namespace
         std::vector<char> d_buffer;
 
         snprintf_values(char const* name)
-            : d_file(fopen(name, "w"))
+            : d_file(fopen(name, "w+"))
             , d_buffer(1000 * 12)
         {
             if (!this->d_file) {
@@ -161,6 +173,7 @@ int main(int ac, char* av[])
     std::generate_n(std::back_inserter(values), 1000, &rand);
     std::locale::global(std::locale(std::locale(), new std::num_put<char, char*>()));
 
+    measure<format_ostream>(context, "format ostream", name, values);
     measure<copy_ostream_iterator>(context, "copy ostream_iterator", name, values);
 #if !defined(__INTEL_COMPILER)
     measure<to_string_stream>(context, "to_string()/ofstream", name, values);
