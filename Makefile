@@ -38,6 +38,7 @@ NAME = algorithm/transform
 NAME = algorithm/reduce
 
 NAME = test/write-ints
+NAME = test/format-ints
 
 TESTS = \
 	test/accumulate-int-array \
@@ -50,6 +51,7 @@ TESTS = \
 	test/sequence-iteration \
 	test/smart-pointers \
 	test/write-characters  \
+	test/format-ints  \
 	test/write-ints  \
 
 PARALLEL_TESTS = \
@@ -61,8 +63,8 @@ PARALLEL_TESTS = \
 #  ----------------------------------------------------------------------------
 
 COMPILER  = gcc
-GXX       = /opt/gcc-7.2.0/bin/g++
-CLANGXX   = clang++
+GXX       = /opt/gcc-8.2.0/bin/g++
+CLANGXX   = /opt/llvm-6.0.1/bin/clang++
 AR        = ar
 ARFLAGS   = rcu
 USE_CXX11 = yes
@@ -80,22 +82,22 @@ ifeq ($(USE_CXX11),yes)
     CPPFLAGS += -DUSE_CXX11
 endif
 
-CPPFLAGS += -fopenmp
-LDLIBS += -fopenmp
+xCPPFLAGS += -fopenmp
+xLDLIBS += -fopenmp
 # CPPFLAGS += -DHAS_PSTL -I../parallel/ParallelSTL/include
 # CPPFLAGS += -DHAS_SYCLSTL -I../parallel/SyclParallelSTL/include
 #CPPFLAGS += -DHAS_PSTL -I../parallel/n3554/include
 
-KUHLHOME = ../kuhllib
-CPPFLAGS += -I$(KUHLHOME)/src
-LDLIBS   += -lnstd-execution
+# KUHLHOME = ../kuhllib
+# CPPFLAGS += -I$(KUHLHOME)/src
+# LDLIBS   += -lnstd-execution
 
-LIBCXX   = /Users/kuehl/src/llvm/libcxx
+# LIBCXX   = /Users/kuehl/src/llvm/libcxx
 # LIBSTDCXX = /opt/gcc-current/include/c++/4.9.0
 
-FINHPX = @echo no finalization needed on $(SYSTEM) for HPX:
-FINTBB = @echo no finalization needed on $(SYSTEM) for TBB:
-FINOMP = @echo no finalization needed on $(SYSTEM) for OMP:
+# FINHPX = @echo no finalization needed on $(SYSTEM) for HPX:
+# FINTBB = @echo no finalization needed on $(SYSTEM) for TBB:
+# FINOMP = @echo no finalization needed on $(SYSTEM) for OMP:
 
 ifeq ($(COMPILER),gcc)
     CXX      = $(GXX)
@@ -105,7 +107,7 @@ ifeq ($(COMPILER),gcc)
     xLTOFLAGS = -flto
     LOPTFLAGS += -O3
     xLOPTFLAGS += -fno-tree-vectorize
-    LDFLAGS  += -L$(KUHLHOME)/build-gcc/nstd/execution
+    xLDFLAGS  += -L$(KUHLHOME)/build-gcc/nstd/execution
 
     ifeq ($(USE_CXX11),yes)
         CPPFLAGS += -std=c++14
@@ -118,12 +120,12 @@ ifeq ($(COMPILER),gcc)
     # LDLIBS   += -ltbb
 
     ifeq ($(SYSTEM),Darwin)
-        FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/gcc-7.2.0/lib/libtbb.dylib"
+        xFINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/gcc-7.2.0/lib/libtbb.dylib"
      else
-        LDFLAGS+=-Wl,-rpath=/opt/gcc-6.3.0/lib
+        xLDFLAGS+=-Wl,-rpath=/opt/gcc-6.3.0/lib
     endif
     ifeq ($(SYSTEM),Darwin)
-        FINHPX = install_name_tool -change "@rpath/libhpx.1.dylib" "/opt/gcc-7.2.0/lib/libhpx.1.dylib"
+        xFINHPX = install_name_tool -change "@rpath/libhpx.1.dylib" "/opt/gcc-7.2.0/lib/libhpx.1.dylib"
     endif
 endif
 ifeq ($(COMPILER),clang)
@@ -131,23 +133,23 @@ ifeq ($(COMPILER),clang)
     DEPFLAGS = -M
     xLTOFLAGS = -flto
     LOPTFLAGS = -O3
-    LDFLAGS  += -L$(KUHLHOME)/build-clang/nstd/execution
+    xLDFLAGS  += -L$(KUHLHOME)/build-clang/nstd/execution
 
     ifeq ($(USE_CXX11),yes)
         CPPFLAGS += -std=c++14
     endif
-    CPPFLAGS += -I$(LIBCXX)/include
+    xCPPFLAGS += -I$(LIBCXX)/include
     CXXLIB = -stdlib=libc++
     CXXFLAGS += -W -Wall $(CXXLIB) $(OPTFLAGS)
-    LDFLAGS  += $(CXXLIB) -L$(LIBCXX)/lib
+    x LDFLAGS  += $(CXXLIB) -L$(LIBCXX)/lib
 
     # LDLIBS   += -ltbb
-    LDFLAGS += -L/opt/llvm-4.0.0/lib
+    xLDFLAGS += -L/opt/llvm-4.0.0/lib
     ifeq ($(SYSTEM),Darwin)
-      FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/llvm-4.0.0/lib/libtbb.dylib"
-      FINOMP = install_name_tool -change "@rpath/libomp.dylib" "/opt/llvm-4.0.0/lib/libomp.dylib"
+      xFINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/llvm-4.0.0/lib/libtbb.dylib"
+      xFINOMP = install_name_tool -change "@rpath/libomp.dylib" "/opt/llvm-4.0.0/lib/libomp.dylib"
     else
-        LDFLAGS+=-Wl,-rpath=/opt/llvm-4.0.0/lib
+        xLDFLAGS+=-Wl,-rpath=/opt/llvm-4.0.0/lib
     endif
 
 endif
@@ -167,11 +169,11 @@ ifeq ($(IS_INTEL),yes)
         CXXFLAGS += -DINTEL -std=c++14
     endif
     CXXFLAGS += $(OPTFLAGS)
-    LDFLAGS  += -L$(KUHLHOME)/build-intel/nstd/execution
+    xLDFLAGS  += -L$(KUHLHOME)/build-intel/nstd/execution
     # LDLIBS += -ltbb
     ifeq ($(SYSTEM),Darwin)
-      FINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/intel/compilers_and_libraries_2017.2.163/mac/tbb/lib/libtbb.dylib"
-      FINOMP = install_name_tool -change "@rpath/libiomp5.dylib" "/opt/intel/compilers_and_libraries_2017.2.163/mac/compiler/lib/libiomp5.dylib"
+      xFINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/intel/compilers_and_libraries_2017.2.163/mac/tbb/lib/libtbb.dylib"
+      xFINOMP = install_name_tool -change "@rpath/libiomp5.dylib" "/opt/intel/compilers_and_libraries_2017.2.163/mac/compiler/lib/libiomp5.dylib"
     endif
 endif
 
