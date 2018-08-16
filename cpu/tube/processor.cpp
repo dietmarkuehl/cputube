@@ -64,6 +64,7 @@ namespace
 {
     void cpuid(uint32_t eax, uint32_t (&words)[4])
     {
+#if 0
         __asm__ __volatile__(
             "push" REG "\n"
             "cpuid\n"
@@ -72,6 +73,7 @@ namespace
             : "=a"(words[0])
               , [ebx] "=r"(words[1]), "=c"(words[3]), "=d"(words[2])
             : "a"(eax));
+#endif
     }
 }
 
