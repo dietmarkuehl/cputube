@@ -217,6 +217,9 @@ chart: $(OBJ)/cputube_chart
 	@mkdir -p charts
 	$(OBJ)/cputube_chart $(NAME) */cputest_$(NAME).result
 
+.PHONY: build
+build: $(OBJ)/cputest_$(NAME)
+
 .PHONY: all
 all:
 	for f in $(TESTS); \
@@ -244,9 +247,9 @@ check: $(OBJ)/cputest_$(NAME)
 
 $(OBJ)/cputest_$(NAME): $(OBJ)/libcputube.a $(TESTFILES)
 	$(CXX) -o $@ $(LDFLAGS) $(TESTFILES) -L$(OBJ) -lcputube $(LDLIBS)
-	$(FINHPX) $@
-	$(FINTBB) $@
-	$(FINOMP) $@
+	@true $(FINHPX) $@
+	@true $(FINTBB) $@
+	@true $(FINOMP) $@
 
 $(OBJ)/libcputube.a: $(LIBFILES)
 	$(AR) $(ARFLAGS) $@ $(LIBFILES)
