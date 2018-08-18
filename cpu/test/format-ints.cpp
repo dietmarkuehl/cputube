@@ -35,7 +35,6 @@
 #include <vector>
 #include <stdio.h>
 #include <stdlib.h>
-#include <boost/lexical_cast.hpp>
 
 // ----------------------------------------------------------------------------
 // This test simulates formatting a message ready to be logged somewhere. In
@@ -177,7 +176,7 @@ measure(cpu::tube::context& context, char const* name, address addr,
     {
         Formatter formatter;
         int       count(30);
-        for (int i = 0; i != 10000; ++i) {
+        for (int i = 0; i != 1000; ++i) {
             if (i == 50000) {
                 formatter.process(addr, values,
                                   [=](char const* begin, char const* end) mutable {
@@ -206,6 +205,7 @@ measure(cpu::tube::context& context, char const* name, address addr,
 
 int main(int ac, char* av[])
 {
+    std::ios_base::sync_with_stdio(false);
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
     std::vector<int>   values;
     std::minstd_rand   rand;
