@@ -24,6 +24,7 @@
 // ----------------------------------------------------------------------------
 
 #include "cpu/tube/context.hpp"
+#include "cpu/data-structures/hash_set.hpp"
 
 #include <algorithm>
 #include <iomanip>
@@ -46,6 +47,8 @@
 #if defined(IS_GCC)
 #include <ext/vstring.h>
 #endif
+
+namespace DS = cpu::data_structures;
 
 // ----------------------------------------------------------------------------
 
@@ -124,6 +127,16 @@ namespace
     {
         boost::unordered_set<string_type> d_values;
         boost_unordered_set_find(std::vector<string_type> const& values)
+            : d_values(values.begin(), values.end()) {}
+        bool contains(string_type value) const {
+            return this->d_values.find(value) != this->d_values.end();
+        }
+    };
+
+    struct hash_set_find
+    {
+        DS::hash_set<string_type> d_values;
+        hash_set_find(std::vector<string_type> const& values)
             : d_values(values.begin(), values.end()) {}
         bool contains(string_type value) const {
             return this->d_values.find(value) != this->d_values.end();
@@ -221,6 +234,7 @@ namespace
         }
 #endif
         measure(context, sought, "boost unordered set find()", size, boost_unordered_set_find(values));
+        measure(context, sought, "data_structures::hash set find()", size, hash_set_find(values));
 #if defined(HAS_GOOGLE_BTREE)
         measure(context, sought, "b-tree set find()",          size, btree_set_find(values));
 #endif
