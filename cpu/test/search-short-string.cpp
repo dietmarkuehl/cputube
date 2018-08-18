@@ -24,11 +24,13 @@
 // ----------------------------------------------------------------------------
 
 #include "cpu/tube/context.hpp"
+#include "cpu/data-structures/hash_set.hpp"
 
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <random>
 #include <set>
 #include <string>
 #include <sstream>
@@ -37,7 +39,7 @@
 #endif
 #include "boost/unordered_set.hpp"
 #include <vector>
-#if !defined(__INTEL_COMPILER)
+#if defined(HAS_GOOGLE_BTREE)
 #include "google/cpp-btree/btree_set.h"
 #endif
 #include <stdlib.h>
@@ -45,6 +47,8 @@
 #if defined(IS_GCC)
 #include <ext/vstring.h>
 #endif
+
+namespace DS = cpu::data_structures;
 
 // ----------------------------------------------------------------------------
 
@@ -129,7 +133,17 @@ namespace
         }
     };
 
-#if !defined(__INTEL_COMPILER)
+    struct hash_set_find
+    {
+        DS::hash_set<string_type> d_values;
+        hash_set_find(std::vector<string_type> const& values)
+            : d_values(values.begin(), values.end()) {}
+        bool contains(string_type value) const {
+            return this->d_values.find(value) != this->d_values.end();
+        }
+    };
+
+#if defined(HAS_GOOGLE_BTREE)
     struct btree_set_find
     {
         btree::btree_set<string_type> d_values;
@@ -185,10 +199,10 @@ namespace
     {
         int range(size + size / 2);
         std::vector<string_type> values;
+        std::unordered_set<string_type> used;
         for (unsigned int usize(size); values.size() != usize; ) {
             int value(rand() % range);
-            if (values.end()
-                == std::find(values.begin(), values.end(), strings[value])) {
+            if (used.insert(strings[value]).second) {
                 values.push_back(strings[value]);
             }
         }
@@ -198,6 +212,7 @@ namespace
             sought.push_back(strings[rand() % range]);
         }
 
+#if 0
         if (size < 400) {
             measure(context, sought, "vector find()",              size, vector_find(values));
         }
@@ -206,6 +221,7 @@ namespace
             out << "vector find() [" << size << "]";
             context.stub(out.str());
         }
+#endif
         measure(context, sought, "vector lower_bound()",       size, vector_lower_bound(values));
         measure(context, sought, "set find()",                 size, set_find(values));
 #if !defined(__INTEL_COMPILER)
@@ -218,32 +234,30 @@ namespace
         }
 #endif
         measure(context, sought, "boost unordered set find()", size, boost_unordered_set_find(values));
-#if !defined(__INTEL_COMPILER)
+        measure(context, sought, "data_structures::hash set find()", size, hash_set_find(values));
+#if defined(HAS_GOOGLE_BTREE)
         measure(context, sought, "b-tree set find()",          size, btree_set_find(values));
-#else
-        {
-            std::ostringstream out;
-            out << "b-tree set find() [" << size << "]";
-            context.stub(out.str());
-        }
 #endif
     }
 
     std::vector<string_type> make_strings(unsigned int size)
     {
+        std::minstd_rand   rand;
+        rand.seed(17);
+
         string_type codes[] = {
             "BE", "DE", "DK", "FR", "GB", "JP", "NL", "NO", "SE", "US"
         };
+
         boost::unordered_set<string_type> rc;
+        std::ostringstream out;
+        out.fill('0');
         while (rc.size() < size) {
-            std::ostringstream out;
-            out.fill('0');
-            out << codes[rand() % 10] << std::setw(9)
-                << (std::rand() % 1000000000) << '0';
+            out.str(std::string());
+            out << codes[rand() % 10]
+                << std::setw(9) << (rand() % 1000000000) << '0';
             string_type value(out.str().c_str());
-            if (std::find(rc.begin(), rc.end(), value) == rc.end()) {
-                rc.insert(value);
-            }
+            rc.insert(value);
         }
         return std::vector<string_type>(rc.begin(), rc.end());
     }
@@ -255,7 +269,7 @@ int main(int ac, char* av[])
 {
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
     int size(ac == 1? 0: atoi(av[1]));
-    int const max = 1000;
+    int const max = 1000000;
     std::vector<string_type> strings(make_strings(2 * (size? size: max * 20)));
     if (size) {
         run_tests(context, size, strings);

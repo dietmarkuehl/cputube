@@ -39,6 +39,7 @@ NAME = algorithm/reduce
 
 NAME = test/write-ints
 NAME = test/format-ints
+NAME = data-structures/hash_set.t
 
 TESTS = \
 	test/accumulate-int-array \
@@ -187,14 +188,18 @@ CPPFLAGS += -DCPUTUBE_ARCH='"$(ARCH)"' \
             -DCPUTUBE_FLAGS='"$(OPTFLAGS)"'
 
 CPPFLAGS += -I/usr/local/include -I.
-CXXFILES = \
+LIBCXXFILES = \
 	cpu/tube/chrono.cpp    \
 	cpu/tube/timer.cpp     \
 	cpu/tube/context.cpp   \
 	cpu/tube/processor.cpp \
 	cpu/tube/heap_fragment.cpp     \
 
-LIBFILES  = $(CXXFILES:cpu/tube/%.cpp=$(OBJ)/cputube_%.o)
+CXXFILES = \
+	$(LIBCXXFILES) \
+	cpu/data-structures/hash_set.t.cpp     \
+
+LIBFILES  = $(LIBCXXFILES:cpu/tube/%.cpp=$(OBJ)/cputube_%.o)
 TESTFILES = $(OBJ)/cputest_$(NAME).o
 ifeq ($(NAME),ptr-function-calls)
 TESTFILES = $(OBJ)/cputest_$(NAME).o $(OBJ)/cputest_$(NAME)-impl.o
@@ -216,6 +221,9 @@ charts: $(OBJ)/cputube_charts
 chart: $(OBJ)/cputube_chart
 	@mkdir -p charts
 	$(OBJ)/cputube_chart $(NAME) */cputest_$(NAME).result
+
+.PHONY: build
+build: $(OBJ)/cputest_$(NAME)
 
 .PHONY: all
 all:
@@ -244,9 +252,9 @@ check: $(OBJ)/cputest_$(NAME)
 
 $(OBJ)/cputest_$(NAME): $(OBJ)/libcputube.a $(TESTFILES)
 	$(CXX) -o $@ $(LDFLAGS) $(TESTFILES) -L$(OBJ) -lcputube $(LDLIBS)
-	$(FINHPX) $@
-	$(FINTBB) $@
-	$(FINOMP) $@
+	@true $(FINHPX) $@
+	@true $(FINTBB) $@
+	@true $(FINOMP) $@
 
 $(OBJ)/libcputube.a: $(LIBFILES)
 	$(AR) $(ARFLAGS) $@ $(LIBFILES)
@@ -258,8 +266,6 @@ $(OBJ)/cputube_%.o: cpu/tube/%.cpp
 $(OBJ)/cputest_%.o: cpu/%.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(OPTFLAGS) -c -o $@ $(@:$(OBJ)/cputest_%.o=cpu/%.cpp)
-
-test: cpuid
 
 .PHONY: clean
 clean:
