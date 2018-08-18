@@ -40,6 +40,7 @@ NAME = algorithm/reduce
 NAME = test/write-ints
 NAME = test/format-ints
 NAME = data-structures/hash_set.t
+NAME = test/search-short-string
 
 TESTS = \
 	test/accumulate-int-array \
@@ -142,7 +143,8 @@ ifeq ($(COMPILER),clang)
     xCPPFLAGS += -I$(LIBCXX)/include
     CXXLIB = -stdlib=libc++
     CXXFLAGS += -W -Wall $(CXXLIB) $(OPTFLAGS)
-    x LDFLAGS  += $(CXXLIB) -L$(LIBCXX)/lib
+    xLDFLAGS  += $(CXXLIB) -L$(LIBCXX)/lib
+    LDFLAGS  += $(CXXLIB)
 
     # LDLIBS   += -ltbb
     xLDFLAGS += -L/opt/llvm-4.0.0/lib

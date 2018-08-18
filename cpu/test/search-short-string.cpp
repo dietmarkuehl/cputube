@@ -269,7 +269,7 @@ int main(int ac, char* av[])
 {
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
     int size(ac == 1? 0: atoi(av[1]));
-    int const max = 1000000;
+    int const max = 100000;
     std::vector<string_type> strings(make_strings(2 * (size? size: max * 20)));
     if (size) {
         run_tests(context, size, strings);
