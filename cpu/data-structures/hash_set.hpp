@@ -144,7 +144,7 @@ private:
         if (this->d_size == std::ptrdiff_t(this->d_mask - (this->d_mask >> 3))) {
             this->p_resize();
         }
-        auto hash{this->d_hash(key)};
+        auto hash{this->d_hash(key) >> 3};
         auto it{this->p_find(hash, key)};
         auto index{it - this->p_begin()};
 
@@ -186,7 +186,7 @@ public:
     }
     const_iterator end() const { return const_iterator{this, std::ptrdiff_t(this->d_mask) + 1}; }
     const_iterator find(const Key& key) const {
-        auto hash{this->d_hash(key)};
+        auto hash{this->d_hash(key) >> 3};
         auto it{this->p_find(hash, key)};
         return p_is_empty(*it)? this->end(): const_iterator{this, it - this->p_begin()};
     }
