@@ -149,7 +149,7 @@ namespace
         static char const* name() { return "hpx::parallel::reduce()"; }
         template <typename InIt, typename T, typename Op>
         T operator()(InIt begin, InIt end, T init, Op op) const {
-            auto rc = hpx::parallel::reduce(hpx::parallel::execution::par,
+            auto rc = hpx::parallel::reduce(hpx::parallel::execution::seq,
                                          begin,
                                          end,
                                          init,

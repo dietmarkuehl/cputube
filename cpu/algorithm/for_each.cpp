@@ -159,7 +159,7 @@ namespace
         static char const* name() { return "hpx::parallel::for_each"; }
         template <typename InIt, typename Fun>
         void operator()(InIt begin, InIt end, Fun fun) const {
-            hpx::parallel::for_each(hpx::parallel::execution::par,
+            hpx::parallel::for_each(hpx::parallel::execution::seq,
                                     begin, end, fun);
         }
     };
