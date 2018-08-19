@@ -179,7 +179,7 @@ void run(cpu::tube::context& context, int size, Comp comp) {
         run_tests(context, size, comp);
     }
     else {
-        int offset(10000);
+        int offset(1000);
         for (int i(10); i <= 10000; i *= 10) {
             for (int j(1); j < 10; j *= 2) {
                 run_tests(context, offset * i * j, comp);
