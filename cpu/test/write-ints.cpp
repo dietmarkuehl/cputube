@@ -167,6 +167,7 @@ measure(cpu::tube::context& context, char const* name, char const* filename,
 
 int main(int ac, char* av[])
 {
+    std::ios_base::sync_with_stdio(false);
     cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
     char const* name(ac == 1? "/dev/null": av[1]);
     std::vector<int>   values;
