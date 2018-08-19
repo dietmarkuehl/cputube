@@ -27,6 +27,7 @@ NAME = test/smart-pointers
 NAME = test/accumulate-int-array
 NAME = test/unique-strings
 NAME = test/search-integer
+NAME = test/search-short-string
 
 NAME = algorithm/all_of
 NAME = algorithm/copy
@@ -73,8 +74,8 @@ SYSTEM    = $(shell uname -s)
 # BSL_CPPFLAGS += -I/usr/local/include/bsl -DHAS_BSL
 # BSL_CPPFLAGS += -I/usr/local/include/bdl
 # BSL_LDLIBS   += -lbsl
-# HPXLIBS   = -Wl,-rpath -Wl,/opt/gcc-7.2.0/lib
-# HPXLIBS   += -lhpx_init -lhpx -L/opt/gcc-7.2.0/lib -lboost_regex -lboost_program_options -lboost_system -lboost_thread
+# HPXLIBS   = -Wl,-rpath -Wl,/opt/gcc-8.2.0/lib
+# HPXLIBS   += -lhpx_init -lhpx -L/opt/gcc-8.2.0/lib -lboost_regex -lboost_program_options -lboost_system -lboost_thread
 
 CPPFLAGS = $(BSL_CPPFLAGS)
 LDLIBS   = $(BSL_LDLIBS) $(HPXLIBS)
@@ -111,7 +112,7 @@ ifeq ($(COMPILER),gcc)
     xLDFLAGS  += -L$(KUHLHOME)/build-gcc/nstd/execution
 
     ifeq ($(USE_CXX11),yes)
-        CPPFLAGS += -std=c++14
+        CPPFLAGS += -std=c++17
     else
         CPPFLAGS += -ansi -pedantic
     endif
@@ -121,12 +122,12 @@ ifeq ($(COMPILER),gcc)
     # LDLIBS   += -ltbb
 
     ifeq ($(SYSTEM),Darwin)
-        xFINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/gcc-7.2.0/lib/libtbb.dylib"
+        xFINTBB = install_name_tool -change "@rpath/libtbb.dylib" "/opt/gcc-8.2.0/lib/libtbb.dylib"
      else
         xLDFLAGS+=-Wl,-rpath=/opt/gcc-6.3.0/lib
     endif
     ifeq ($(SYSTEM),Darwin)
-        xFINHPX = install_name_tool -change "@rpath/libhpx.1.dylib" "/opt/gcc-7.2.0/lib/libhpx.1.dylib"
+        xFINHPX = install_name_tool -change "@rpath/libhpx.1.dylib" "/opt/gcc-8.2.0/lib/libhpx.1.dylib"
     endif
 endif
 ifeq ($(COMPILER),clang)
@@ -137,7 +138,7 @@ ifeq ($(COMPILER),clang)
     xLDFLAGS  += -L$(KUHLHOME)/build-clang/nstd/execution
 
     ifeq ($(USE_CXX11),yes)
-        CPPFLAGS += -std=c++14
+        CPPFLAGS += -std=c++17
     endif
     xCPPFLAGS += -I$(LIBCXX)/include
     CXXLIB = -stdlib=libc++
@@ -167,7 +168,7 @@ ifeq ($(IS_INTEL),yes)
     LOPTFLAGS = -O3
     ifeq ($(USE_CXX11),yes)
         xCPPFLAGS += -Icpu/icc-lib
-        CXXFLAGS += -DINTEL -std=c++14
+        CXXFLAGS += -DINTEL -std=c++17
     endif
     CXXFLAGS += $(OPTFLAGS)
     xLDFLAGS  += -L$(KUHLHOME)/build-intel/nstd/execution
@@ -248,7 +249,7 @@ build-all:
 
 .PHONY: check
 check: $(OBJ)/cputest_$(NAME)
-	DYLD_LIBRARY_PATH=/opt/gcc-7.2.0/lib $(OBJ)/cputest_$(NAME) | tee $(OBJ)/cputest_$(NAME).result
+	DYLD_LIBRARY_PATH=/opt/gcc-8.2.0/lib $(OBJ)/cputest_$(NAME) | tee $(OBJ)/cputest_$(NAME).result
 
 $(OBJ)/cputest_$(NAME): $(OBJ)/libcputube.a $(TESTFILES)
 	$(CXX) -o $@ $(LDFLAGS) $(TESTFILES) -L$(OBJ) -lcputube $(LDLIBS)

@@ -143,6 +143,37 @@ namespace
         }
     };
 
+    template <typename T, int = std::numeric_limits<T>::digits>
+    inline constexpr T fnv_basis;
+    template <typename T> inline constexpr T fnv_basis<T, 32>{0x811c9dc5};
+    template <typename T> inline constexpr T fnv_basis<T, 64>{0xcbf29ce484222325};
+
+    template <typename T, int = std::numeric_limits<T>::digits>
+    inline constexpr T fnv_prime;
+    template <typename T> inline constexpr T fnv_prime<T, 32>{16777619};
+    template <typename T> inline constexpr T fnv_prime<T, 64>{1099511628211};
+
+    struct fnv1a {
+        std::size_t operator()(string_type const& s) const {
+            std::size_t result{fnv_basis<std::size_t>};
+            for (unsigned char octet: s) {
+                result ^= octet;
+                result *= fnv_prime<std::size_t>;
+            }
+            return result;
+        }
+    };
+
+    struct fnv1a_set_find
+    {
+        DS::hash_set<string_type, fnv1a> d_values;
+        fnv1a_set_find(std::vector<string_type> const& values)
+            : d_values(values.begin(), values.end()) {}
+        bool contains(string_type value) const {
+            return this->d_values.find(value) != this->d_values.end();
+        }
+    };
+
 #if defined(HAS_GOOGLE_BTREE)
     struct btree_set_find
     {
@@ -235,6 +266,7 @@ namespace
 #endif
         measure(context, sought, "boost unordered set find()", size, boost_unordered_set_find(values));
         measure(context, sought, "data_structures::hash set find()", size, hash_set_find(values));
+        measure(context, sought, "data_structures::hash set (fnv1a) find()", size, fnv1a_set_find(values));
 #if defined(HAS_GOOGLE_BTREE)
         measure(context, sought, "b-tree set find()",          size, btree_set_find(values));
 #endif
