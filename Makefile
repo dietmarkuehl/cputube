@@ -107,9 +107,10 @@ ifeq ($(COMPILER),gcc)
     xOPTFLAGS += -g -finline-functions
     xLOPTFLAGS += -pthread
     xLTOFLAGS = -flto
-    LOPTFLAGS += -O3
+    LOPTFLAGS += -O3 -march=native
     xLOPTFLAGS += -fno-tree-vectorize
     xLDFLAGS  += -L$(KUHLHOME)/build-gcc/nstd/execution
+    OPTFLAGS += -O3 -march=native
 
     ifeq ($(USE_CXX11),yes)
         CPPFLAGS += -std=c++17
@@ -135,6 +136,7 @@ ifeq ($(COMPILER),clang)
     DEPFLAGS = -M
     xLTOFLAGS = -flto
     LOPTFLAGS = -O3
+    OPTFLAGS = -O3
     xLDFLAGS  += -L$(KUHLHOME)/build-clang/nstd/execution
 
     ifeq ($(USE_CXX11),yes)
@@ -143,7 +145,8 @@ ifeq ($(COMPILER),clang)
     xCPPFLAGS += -I$(LIBCXX)/include
     CXXLIB = -stdlib=libc++
     CXXFLAGS += -W -Wall $(CXXLIB) $(OPTFLAGS)
-    x LDFLAGS  += $(CXXLIB) -L$(LIBCXX)/lib
+    xLDFLAGS  += $(CXXLIB) -L$(LIBCXX)/lib
+    LDFLAGS  += $(CXXLIB)
 
     # LDLIBS   += -ltbb
     xLDFLAGS += -L/opt/llvm-4.0.0/lib
@@ -179,11 +182,11 @@ ifeq ($(IS_INTEL),yes)
     endif
 endif
 
-OPTEXT   = $(shell echo $(OPTFLAGS) | tr -d '-' | tr ' ' '-')
+OPTFLAGS = $(LOPTFLAGS) $(LTOFLAGS)
+OPTEXT   = $(shell echo $(OPTFLAGS) | tr -d '-' | tr ' =' '--')
 ARCH     = $(shell uname -s)
 OBJ      = $(ARCH)-$(COMPILER)-$(OPTEXT)
 CC       = $(CXX)
-OPTFLAGS = $(LOPTFLAGS) $(LTOFLAGS)
 CPPFLAGS += -DCPUTUBE_ARCH='"$(ARCH)"' \
             -DCPUTUBE_COMPILER='"$(COMPILER)"' \
             -DCPUTUBE_FLAGS='"$(OPTFLAGS)"'
