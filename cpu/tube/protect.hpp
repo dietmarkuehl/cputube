@@ -8,18 +8,41 @@
 
 namespace cpu {
     namespace tube {
-        void escape(void *p) {
-           asm volatile("" : : "g"(p) : "memory");
-        }
-        void escape(void const *p) {
-           asm volatile("" : : "g"(p) : "memory");
-        }
+#if !defined(_MSC_VER)
+        inline void escape(void const *p);
+        inline void escape(void *p);
+#endif
 
-        void clobber() {
-           asm volatile("" : : : "memory");
-        }
+        template <typename T>
+        void prevent_optimize_away(T&& value);
     }
 }
+
+// ----------------------------------------------------------------------------
+
+#if defined(_MSC_VER)
+#  pragma optimize("", off)
+
+template <typename T>
+void prevent_optimize_away(T&& value) {
+    value = value;
+}
+
+#  pragma optimize("", on)
+#else
+
+inline void cpu::tube::escape(void const *p) {
+    asm volatile("" : : "g"(p) : "memory");
+}
+inline void cpu::tube::escape(void *p) {
+    asm volatile("" : : "g"(p) : "memory");
+}
+
+template <typename T>
+void cpu::tube::prevent_optimize_away(T&& value) {
+    cpu::tube::escape(&value);
+}
+#endif
 
 // ----------------------------------------------------------------------------
 

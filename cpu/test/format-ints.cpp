@@ -192,9 +192,8 @@ measure(cpu::tube::context& context, char const* name, address addr,
             else {
                 formatter.process(addr, values,
                                   [](char const* begin, char const* end) {
-                                      cpu::tube::escape(begin);
-                                      cpu::tube::escape(end);
-                                      cpu::tube::clobber();
+                                      cpu::tube::prevent_optimize_away(begin);
+                                      cpu::tube::prevent_optimize_away(end);
                                   });
             }
         }
@@ -206,7 +205,7 @@ measure(cpu::tube::context& context, char const* name, address addr,
 
 int main(int ac, char* av[])
 {
-    cpu::tube::context context(CPUTUBE_CONTEXT_ARGS(ac, av));
+    cpu::tube::context context(ac, av, "<unknown>", "<unknown>", "<unknown>");
     std::vector<int>   values;
     std::minstd_rand   rand;
     rand.seed(17);

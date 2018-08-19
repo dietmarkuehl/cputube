@@ -38,8 +38,8 @@ NAME = algorithm/transform
 NAME = algorithm/reduce
 
 NAME = test/write-ints
-NAME = test/format-ints
 NAME = data-structures/hash_set.t
+NAME = test/format-ints
 
 TESTS = \
 	test/accumulate-int-array \

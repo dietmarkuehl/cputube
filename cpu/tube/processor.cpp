@@ -54,6 +54,7 @@ namespace
 
 // ----------------------------------------------------------------------------
 
+#if 0 //-dk:TODO
 #if defined(__x86_64__) || defined(_M_AMD64) || defined (_M_X64)
 #  define REG "q %%rbx"
 #else
@@ -76,13 +77,14 @@ namespace
 }
 
 #undef REG
+#endif
 
 // ----------------------------------------------------------------------------
 
 static uint32_t print_manufacturer(std::ostream& out)
 {
     uint32_t words[4];
-    cpuid(0, words);
+    //-dk:TODO cpuid(0, words);
     std::for_each(words + 1, words + 4, ::printer(out));
     return words[0];
 }
